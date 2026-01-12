@@ -42,9 +42,30 @@ ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=your_secure_password_here
 ```
 
-**For Vercel deployment:** Add all environment variables in your Vercel project settings under Environment Variables.
+**For Vercel deployment:** 
 
-**Note:** Generate a secure `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
+1. **Via Dashboard (Recommended):**
+   - Go to your Vercel project → Settings → Environment Variables
+   - Add each variable manually
+   - Select environments (Production, Preview, Development)
+   - **Important:** Update `NEXTAUTH_URL` to your Vercel URL (e.g., `https://your-app.vercel.app`)
+
+2. **Via Vercel CLI:**
+   ```bash
+   npm i -g vercel
+   vercel login
+   vercel link
+   vercel env add MONGODB_URI
+   vercel env add NEXTAUTH_SECRET
+   vercel env add NEXTAUTH_URL
+   vercel env add ADMIN_EMAIL
+   vercel env add ADMIN_PASSWORD
+   ```
+
+**Note:** 
+- `.env.local` is gitignored and NOT synced to Vercel automatically (for security)
+- Generate a secure `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
+- See `.env.example` for reference (this file is safe to commit)
 
 ### Development
 

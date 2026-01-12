@@ -29,19 +29,39 @@ export type PrivacyLevel = z.infer<typeof PrivacyLevelSchema>
 /**
  * Schema for creating a new story
  * Used in createStory Server Action
+ * Validates submitterName requirements based on privacyLevel
  */
-export const createStorySchema = z.object({
-  privacyLevel: PrivacyLevelSchema,
-  submitterName: z.string().min(1).optional(),
-  medicalCondition: z.string().min(1),
-  treatmentCategory: z.string().min(1),
-  treatmentProcess: z.string().min(1),
-  duration: z.string().optional(),
-  outcome: z.string().optional(),
-  therapistId: z.string().optional(),
-  therapistNameRaw: z.string().optional(),
-  transcript: z.string().optional(),
-})
+export const createStorySchema = z
+  .object({
+    privacyLevel: PrivacyLevelSchema,
+    submitterName: z.string().trim().optional(),
+    medicalCondition: z.string().min(1),
+    treatmentCategory: z.string().min(1),
+    treatmentProcess: z.string().min(1),
+    duration: z.string().optional(),
+    outcome: z.string().optional(),
+    therapistId: z.string().optional(),
+    therapistNameRaw: z.string().optional(),
+    transcript: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // FULL_NAME and FIRST_NAME_LAST_INITIAL require submitterName
+      if (
+        (data.privacyLevel === 'FULL_NAME' ||
+          data.privacyLevel === 'FIRST_NAME_LAST_INITIAL') &&
+        (!data.submitterName || data.submitterName.trim().length === 0)
+      ) {
+        return false
+      }
+      return true
+    },
+    {
+      message:
+        'submitterName is required for FULL_NAME and FIRST_NAME_LAST_INITIAL privacy levels',
+      path: ['submitterName'],
+    }
+  )
 
 export type CreateStoryInput = z.infer<typeof createStorySchema>
 

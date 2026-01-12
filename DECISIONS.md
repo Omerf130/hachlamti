@@ -6,6 +6,50 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ## Decisions Log
 
+### 2024-12-XX - Mongoose findOne TypeScript Workaround
+
+**Context:** Mongoose v8 with TypeScript strict mode has type inference issues with `findOne()` method, causing "expression is not callable" errors.
+
+**Decision:** Use explicit query construction with type narrowing to work around Mongoose TypeScript limitations.
+
+**Rationale:** 
+- Maintains type safety without using `any`
+- Follows CURSOR_RULES.md (no `any`, no `@ts-ignore`)
+- Simplest workaround that preserves type checking
+
+**Impact:** 
+- Query construction split into separate lines for better type inference
+- Works correctly at runtime despite TypeScript warnings
+
+---
+
+### 2024-12-XX - DisplayName Computation Rules
+
+**Context:** Specification states "displayName is computed at creation time and stored" but didn't define the exact formula for each privacy level.
+
+**Decision:** DisplayName computation rules by privacy level:
+
+1. **FULL_NAME**: `displayName = submitterName.trim()` - submitterName REQUIRED
+2. **FIRST_NAME_LAST_INITIAL**: `displayName = "<FirstName> <LastInitial>."` - submitterName REQUIRED
+   - Extract first token as first name, last token as last name
+   - If only one name: use first name only
+   - Example: "John Doe Smith" → "John S."
+3. **ANONYMOUS**: `displayName = "אנונימי"` - submitterName OPTIONAL
+4. **INTERNAL_ONLY**: `displayName = "פנימי"` - submitterName optional, never shown publicly
+
+**Rationale:** 
+- Ensures consistent display names stored in database
+- Prevents computation at render time
+- Clear validation rules for each privacy level
+- Hebrew text for anonymous/internal labels matches UI language
+
+**Impact:** 
+- Server Action must compute displayName before saving
+- Validation schema must enforce submitterName requirements
+- Public queries must filter out INTERNAL_ONLY stories
+
+---
+
 ### 2024-12-XX - Admin Authentication Strategy (MVP)
 
 **Context:** Specification requires NextAuth for admin routes but doesn't define admin user model structure.
