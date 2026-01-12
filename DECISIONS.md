@@ -6,6 +6,29 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ## Decisions Log
 
+### 2024-12-XX - Admin Authentication Strategy (MVP)
+
+**Context:** Specification requires NextAuth for admin routes but doesn't define admin user model structure.
+
+**Decision:** Use NextAuth with Credentials provider and environment variables for admin authentication (MVP approach).
+
+**Rationale:** 
+- Simplest approach for MVP - no database model needed
+- Single admin user sufficient for MVP scope
+- Easy to configure via environment variables
+- Can be upgraded to database-backed admin model later if needed
+
+**Alternatives Considered:**
+- Database-backed Admin model (more complex, not needed for MVP)
+- OAuth providers (overkill for single admin user)
+
+**Impact:** 
+- Admin credentials stored in environment variables (ADMIN_EMAIL, ADMIN_PASSWORD)
+- Admin routes protected via middleware
+- Simple login page at /admin/login
+
+---
+
 ### 2024 - Ambiguities Identified During Specification Review
 
 **Context:** Initial review of project specification revealed several areas requiring clarification before implementation.

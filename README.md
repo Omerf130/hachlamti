@@ -30,10 +30,21 @@ npm install
 Create a `.env.local` file in the root directory with:
 
 ```env
+# MongoDB Atlas Connection
 MONGODB_URI=your_mongodb_atlas_connection_string_here
+
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret_here
+
+# Admin Credentials (MVP)
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=your_secure_password_here
 ```
 
-**For Vercel deployment:** Add `MONGODB_URI` in your Vercel project settings under Environment Variables.
+**For Vercel deployment:** Add all environment variables in your Vercel project settings under Environment Variables.
+
+**Note:** Generate a secure `NEXTAUTH_SECRET` using: `openssl rand -base64 32`
 
 ### Development
 
