@@ -1,8 +1,8 @@
-import { connectDB } from '@/lib/db'
 import { type StoryDocument } from '@/models/Story'
+import { findOneByIdAndStatus } from '@/lib/db-queries'
 import { notFound } from 'next/navigation'
-import mongoose from 'mongoose'
 import styles from './page.module.scss'
+import sharedStyles from '@/styles/detail-page.module.scss'
 
 // Ensure Story model is imported
 import '@/models/Story'
@@ -14,28 +14,7 @@ interface StoryDetailPageProps {
 }
 
 async function getStory(id: string): Promise<StoryDocument | null> {
-  try {
-    await connectDB()
-
-    const StoryModel = mongoose.models.Story
-    if (!StoryModel) {
-      return null
-    }
-
-    const storyIdObj = new mongoose.Types.ObjectId(id)
-    const findOneMethod = StoryModel.findOne as unknown as (
-      filter: { _id: mongoose.Types.ObjectId; status: string }
-    ) => { exec: () => Promise<StoryDocument | null> }
-    const story = await findOneMethod({
-      _id: storyIdObj,
-      status: 'PUBLISHED',
-    }).exec()
-
-    return story
-  } catch {
-    // Return null on any error
-    return null
-  }
+  return findOneByIdAndStatus<StoryDocument>('Story', id, 'PUBLISHED')
 }
 
 export default async function StoryDetailPage({
@@ -48,11 +27,11 @@ export default async function StoryDetailPage({
   }
 
   return (
-    <main className={styles.main}>
-      <article className={styles.container}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>{story.displayName}</h1>
-          <div className={styles.meta}>
+    <main className={sharedStyles.main}>
+      <article className={sharedStyles.container}>
+        <header className={sharedStyles.header}>
+          <h1 className={sharedStyles.title}>{story.displayName}</h1>
+          <div className={sharedStyles.meta}>
             <span className={styles.category}>{story.treatmentCategory}</span>
             {story.medicalCondition && (
               <span className={styles.condition}>{story.medicalCondition}</span>
@@ -69,29 +48,29 @@ export default async function StoryDetailPage({
           </div>
         </header>
 
-        <div className={styles.content}>
+        <div className={sharedStyles.content}>
           {story.therapistDisplayName && (
             <div className={styles.therapist}>
               <strong>מטפל:</strong> {story.therapistDisplayName}
             </div>
           )}
 
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>תהליך הטיפול</h2>
-            <p className={styles.text}>{story.treatmentProcess}</p>
+          <section className={sharedStyles.section}>
+            <h2 className={sharedStyles.sectionTitle}>תהליך הטיפול</h2>
+            <p className={sharedStyles.text}>{story.treatmentProcess}</p>
           </section>
 
           {story.duration && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>משך הטיפול</h2>
-              <p className={styles.text}>{story.duration}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>משך הטיפול</h2>
+              <p className={sharedStyles.text}>{story.duration}</p>
             </section>
           )}
 
           {story.outcome && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>תוצאות</h2>
-              <p className={styles.text}>{story.outcome}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>תוצאות</h2>
+              <p className={sharedStyles.text}>{story.outcome}</p>
             </section>
           )}
         </div>

@@ -1,50 +1,34 @@
-import { connectDB } from '@/lib/db'
 import { type TherapistDocument } from '@/models/Therapist'
-import mongoose from 'mongoose'
+import { findMany } from '@/lib/db-queries'
 import styles from './page.module.scss'
+import sharedStyles from '@/styles/list-page.module.scss'
 import Link from 'next/link'
+import EmptyState from '@/components/EmptyState'
 
 // Ensure Therapist model is imported
 import '@/models/Therapist'
 
 async function getTherapists(): Promise<TherapistDocument[]> {
-  try {
-    await connectDB()
-
-    const TherapistModel = mongoose.models.Therapist
-    if (!TherapistModel) {
-      return []
-    }
-
-    const filter = { status: 'APPROVED' }
-    const query = TherapistModel.find(filter).sort({ createdAt: -1 })
-    const execResult = query.exec() as unknown as Promise<TherapistDocument[]>
-    const therapists = await execResult
-
-    return therapists || []
-  } catch {
-    // Return empty array on any error
-    return []
-  }
+  return findMany<TherapistDocument>('Therapist', { status: 'APPROVED' }, {
+    createdAt: -1,
+  })
 }
 
 export default async function TherapistsPage(): Promise<JSX.Element> {
   const therapists = await getTherapists()
 
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>מטפלים</h1>
+    <main className={sharedStyles.main}>
+      <h1 className={sharedStyles.title}>מטפלים</h1>
       {therapists.length === 0 ? (
-        <div className={styles.empty}>
-          <p>אין מטפלים זמינים כרגע</p>
-        </div>
+        <EmptyState message="אין מטפלים זמינים כרגע" />
       ) : (
-        <ul className={styles.therapistsList}>
+        <ul className={sharedStyles.list}>
           {therapists.map((therapist) => (
-            <li key={therapist._id.toString()} className={styles.therapistItem}>
+            <li key={therapist._id.toString()} className={sharedStyles.item}>
               <Link
                 href={`/therapists/${therapist._id.toString()}`}
-                className={styles.therapistLink}
+                className={sharedStyles.link}
               >
                 <div className={styles.therapistName}>{therapist.fullName}</div>
                 {therapist.specialties.length > 0 && (

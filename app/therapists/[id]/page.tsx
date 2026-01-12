@@ -1,8 +1,8 @@
-import { connectDB } from '@/lib/db'
 import { type TherapistDocument } from '@/models/Therapist'
+import { findOneByIdAndStatus } from '@/lib/db-queries'
 import { notFound } from 'next/navigation'
-import mongoose from 'mongoose'
 import styles from './page.module.scss'
+import sharedStyles from '@/styles/detail-page.module.scss'
 
 // Ensure Therapist model is imported
 import '@/models/Therapist'
@@ -14,28 +14,7 @@ interface TherapistDetailPageProps {
 }
 
 async function getTherapist(id: string): Promise<TherapistDocument | null> {
-  try {
-    await connectDB()
-
-    const TherapistModel = mongoose.models.Therapist
-    if (!TherapistModel) {
-      return null
-    }
-
-    const therapistIdObj = new mongoose.Types.ObjectId(id)
-    const findOneMethod = TherapistModel.findOne as unknown as (
-      filter: { _id: mongoose.Types.ObjectId; status: string }
-    ) => { exec: () => Promise<TherapistDocument | null> }
-    const therapist = await findOneMethod({
-      _id: therapistIdObj,
-      status: 'APPROVED',
-    }).exec()
-
-    return therapist
-  } catch {
-    // Return null on any error
-    return null
-  }
+  return findOneByIdAndStatus<TherapistDocument>('Therapist', id, 'APPROVED')
 }
 
 export default async function TherapistDetailPage({
@@ -48,12 +27,12 @@ export default async function TherapistDetailPage({
   }
 
   return (
-    <main className={styles.main}>
-      <article className={styles.container}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>{therapist.fullName}</h1>
+    <main className={sharedStyles.main}>
+      <article className={sharedStyles.container}>
+        <header className={sharedStyles.header}>
+          <h1 className={sharedStyles.title}>{therapist.fullName}</h1>
           {therapist.specialties.length > 0 && (
-            <div className={styles.meta}>
+            <div className={sharedStyles.meta}>
               <div className={styles.specialties}>
                 {therapist.specialties.map((specialty, index) => (
                   <span key={index} className={styles.badge}>
@@ -65,48 +44,52 @@ export default async function TherapistDetailPage({
           )}
         </header>
 
-        <div className={styles.content}>
+        <div className={sharedStyles.content}>
           {therapist.locations.length > 0 && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>מיקומים</h2>
-              <p className={styles.text}>{therapist.locations.join(', ')}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>מיקומים</h2>
+              <p className={sharedStyles.text}>
+                {therapist.locations.join(', ')}
+              </p>
             </section>
           )}
 
           {therapist.languages.length > 0 && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>שפות</h2>
-              <p className={styles.text}>{therapist.languages.join(', ')}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>שפות</h2>
+              <p className={sharedStyles.text}>
+                {therapist.languages.join(', ')}
+              </p>
             </section>
           )}
 
           {therapist.targetAudiences.length > 0 && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>קהלי יעד</h2>
-              <p className={styles.text}>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>קהלי יעד</h2>
+              <p className={sharedStyles.text}>
                 {therapist.targetAudiences.join(', ')}
               </p>
             </section>
           )}
 
           {therapist.treatmentApproach && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>גישת טיפול</h2>
-              <p className={styles.text}>{therapist.treatmentApproach}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>גישת טיפול</h2>
+              <p className={sharedStyles.text}>{therapist.treatmentApproach}</p>
             </section>
           )}
 
           {therapist.yearsExperience && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>שנות ניסיון</h2>
-              <p className={styles.text}>{therapist.yearsExperience}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>שנות ניסיון</h2>
+              <p className={sharedStyles.text}>{therapist.yearsExperience}</p>
             </section>
           )}
 
           {therapist.education && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>השכלה</h2>
-              <p className={styles.text}>{therapist.education}</p>
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>השכלה</h2>
+              <p className={sharedStyles.text}>{therapist.education}</p>
             </section>
           )}
         </div>

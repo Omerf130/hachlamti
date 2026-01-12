@@ -1,0 +1,42 @@
+// Shared styles for list pages (stories, therapists, etc.)
+
+.main {
+  padding: var(--spacing-xl);
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.item {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  transition: box-shadow var(--transition-fast);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
