@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import '../styles/globals.scss'
+import Navigation from '@/components/Navigation'
 
 export const metadata: Metadata = {
   title: 'Hachlamti',
@@ -13,7 +14,10 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang="he" dir="rtl">
-      <body>{children}</body>
+      <body>
+        <Navigation />
+        {children}
+      </body>
     </html>
   )
 }

@@ -8,11 +8,17 @@ export default function Home(): JSX.Element {
       <p className={styles.description}>
         פלטפורמה לפרסום סיפורי החלמה וחיבור למטפלים
       </p>
-      <nav className={styles.nav}>
-        <Link href="/stories">קרא סיפורים</Link>
-        <Link href="/therapists">מצא מטפל</Link>
-        <Link href="/submit-story">שתף סיפור</Link>
-      </nav>
+      <div className={styles.actions}>
+        <Link href="/stories" className={styles.button}>
+          קרא סיפורים
+        </Link>
+        <Link href="/therapists" className={styles.button}>
+          מצא מטפל
+        </Link>
+        <Link href="/submit-story" className={styles.buttonSecondary}>
+          שתף סיפור
+        </Link>
+      </div>
     </main>
   )
 }

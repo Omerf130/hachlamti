@@ -148,6 +148,48 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ---
 
+### 2024-12-XX - Main Navigation Structure (MVP)
+
+**Context:** Need to define navigation structure for MVP before implementing public pages.
+
+**Decision:** Simple, global main navigation for all public pages with hardcoded items.
+
+**Navigation Scope:**
+- Navigation is present on all public pages
+- Navigation is simple and non-configurable
+- No role-based or dynamic menu logic in MVP
+
+**Public Navigation Items (RTL, left to right):**
+1. Home ("/")
+2. Stories ("/stories")
+3. Therapists ("/therapists")
+4. Submit Story ("/submit-story")
+
+**Admin Navigation:**
+- Admin routes have a SEPARATE layout
+- Admin navigation is NOT visible in public navigation
+- Admin layout includes its own sidebar or top nav
+
+**Rules:**
+- Navigation is a presentational UI concern only
+- No permissions logic inside navigation components
+- Navigation structure is hardcoded for MVP
+- Navigation labels are in Hebrew
+- Navigation styling uses SCSS Modules only
+
+**Rationale:**
+- Simplest approach for MVP - no database/config needed
+- Clear separation between public and admin navigation
+- Easy to extend later if needed
+- Follows MVP principle: keep it simple
+
+**Impact:**
+- Main layout includes navigation component
+- Admin layout will have separate navigation
+- All public pages automatically get navigation
+
+---
+
 ## Format
 
 Each decision entry should follow this format:
