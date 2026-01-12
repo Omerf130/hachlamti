@@ -17,12 +17,23 @@ A content-driven platform that publishes recovery stories and connects them to t
 
 - Node.js 18+ 
 - npm or yarn
+- MongoDB Atlas account (for database)
 
 ### Installation
 
 ```bash
 npm install
 ```
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with:
+
+```env
+MONGODB_URI=your_mongodb_atlas_connection_string_here
+```
+
+**For Vercel deployment:** Add `MONGODB_URI` in your Vercel project settings under Environment Variables.
 
 ### Development
 
