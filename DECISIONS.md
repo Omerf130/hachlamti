@@ -190,6 +190,52 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ---
 
+### 2024-12-XX - Authentication & Permissions Model (MVP)
+
+**Context:** Spec update requires authentication for story submission and therapist application. Previously these were assumed to be public actions.
+
+**Decision:** Implement three-tier authentication model:
+
+1. **Guest Users (Not Authenticated):**
+   - Can view all public content (home, stories list/details, therapists list/details)
+   - Cannot submit stories or apply as therapists
+   - Redirected to login if attempting to access `/submit-story` or `/apply-therapist`
+
+2. **Authenticated Users (Non-Admin):**
+   - Can view all public content
+   - Can submit stories via `/submit-story` (creates Story with status PENDING_REVIEW)
+   - Can apply as therapist via `/apply-therapist` (creates Therapist with status PENDING)
+   - Cannot edit/delete submissions or access admin routes
+
+3. **Admin Users (role = ADMIN):**
+   - All authenticated user permissions
+   - Full access to `/admin/*` routes
+   - Can approve/reject/edit content
+
+**Implementation:**
+- Middleware protects `/submit-story` and `/apply-therapist` routes (require any authenticated user)
+- Server-side auth checks in page components as fallback
+- Login page handles `callbackUrl` query param to redirect after successful login
+- Admin routes protected separately (require admin role)
+
+**Route Name Note:**
+- Spec mentions `/therapist/apply` but implementation uses `/apply-therapist` for consistency with `/submit-story` pattern
+- Can be renamed later if needed
+
+**Rationale:**
+- Ensures content quality by requiring user authentication
+- Simple three-tier model fits MVP needs
+- Middleware + page-level checks provide defense in depth
+- Callback URL pattern provides good UX for redirects
+
+**Impact:**
+- `/submit-story` and `/apply-therapist` now require authentication
+- Login page redirects to original destination after login
+- Middleware updated to protect authenticated-only routes
+- All public viewing routes remain accessible to guests
+
+---
+
 ## Format
 
 Each decision entry should follow this format:

@@ -18,16 +18,21 @@ export default function AdminLoginPage(): JSX.Element {
     setLoading(true)
 
     try {
+      // Get callback URL from query params
+      const searchParams = new URLSearchParams(window.location.search)
+      const callbackUrl = searchParams.get('callbackUrl') || '/admin'
+
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
+        callbackUrl,
       })
 
       if (result?.error) {
         setError('Invalid email or password')
       } else {
-        router.push('/admin')
+        router.push(callbackUrl)
         router.refresh()
       }
     } catch (err) {
