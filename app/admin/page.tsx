@@ -6,7 +6,7 @@ export default async function AdminDashboardPage(): Promise<JSX.Element> {
   const session = await getServerSession(authOptions)
 
   if (!session || session.user.role !== 'admin') {
-    redirect('/admin/login')
+    redirect('/login')
   }
 
   return (

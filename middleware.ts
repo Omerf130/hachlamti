@@ -7,14 +7,14 @@ export default withAuth(
     const token = req.nextauth.token
 
     // Allow access to login page
-    if (pathname === '/admin/login') {
+    if (pathname === '/login') {
       return NextResponse.next()
     }
 
     // Require admin role for admin routes
     if (pathname.startsWith('/admin')) {
       if (token?.role !== 'admin') {
-        const loginUrl = new URL('/admin/login', req.url)
+        const loginUrl = new URL('/login', req.url)
         loginUrl.searchParams.set('callbackUrl', pathname)
         return NextResponse.redirect(loginUrl)
       }
@@ -24,7 +24,7 @@ export default withAuth(
     // Authenticated-only routes (require any authenticated user)
     if (pathname === '/submit-story' || pathname === '/apply-therapist') {
       if (!token) {
-        const loginUrl = new URL('/admin/login', req.url)
+        const loginUrl = new URL('/login', req.url)
         loginUrl.searchParams.set('callbackUrl', pathname)
         return NextResponse.redirect(loginUrl)
       }
@@ -39,7 +39,7 @@ export default withAuth(
         const { pathname } = req.nextUrl
 
         // Allow access to login page
-        if (pathname === '/admin/login') {
+        if (pathname === '/login') {
           return true
         }
 
@@ -65,6 +65,7 @@ export const config = {
     '/admin/:path*',
     '/submit-story',
     '/apply-therapist',
+    '/login',
   ],
 }
 

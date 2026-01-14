@@ -19,7 +19,7 @@ export default async function SubmitStoryPage(): Promise<JSX.Element> {
   // Require authentication (any authenticated user can submit)
   const session = await getServerSession(authOptions)
   if (!session) {
-    redirect(`/admin/login?callbackUrl=${encodeURIComponent('/submit-story')}`)
+    redirect(`/login?callbackUrl=${encodeURIComponent('/submit-story')}`)
   }
 
   const therapists = await getTherapists()

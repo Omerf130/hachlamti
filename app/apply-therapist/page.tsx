@@ -8,7 +8,7 @@ export default async function ApplyTherapistPage(): Promise<JSX.Element> {
   // Require authentication (any authenticated user can apply)
   const session = await getServerSession(authOptions)
   if (!session) {
-    redirect(`/admin/login?callbackUrl=${encodeURIComponent('/apply-therapist')}`)
+    redirect(`/login?callbackUrl=${encodeURIComponent('/apply-therapist')}`)
   }
 
   return (

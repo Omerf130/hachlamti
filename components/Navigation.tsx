@@ -37,10 +37,10 @@ export default function Navigation(): JSX.Element {
         </>
       ) : (
         <>
-          <Link href="/admin/login" className={styles.button}>
+          <Link href="/signup" className={styles.button}>
             הרשמה
           </Link>
-          <Link href="/admin/login" className={styles.button}>
+          <Link href="/login" className={styles.button}>
             התחבר
           </Link>
         </>
