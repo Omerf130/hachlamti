@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import '../styles/globals.scss'
 import Navigation from '@/components/Navigation'
+import SessionProvider from '@/components/SessionProvider'
 
 export const metadata: Metadata = {
   title: 'Hachlamti',
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl">
       <body>
-        <Navigation />
-        {children}
+        <SessionProvider>
+          <Navigation />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   )

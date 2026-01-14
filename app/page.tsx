@@ -1,7 +1,12 @@
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
 import styles from './page.module.scss'
 
-export default function Home(): JSX.Element {
+export default async function Home(): Promise<JSX.Element> {
+  const session = await getServerSession(authOptions)
+  const isAuthenticated = !!session
+
   return (
     <main className={styles.main}>
       <h1 className={styles.title}>Hachlamti</h1>
@@ -15,9 +20,11 @@ export default function Home(): JSX.Element {
         <Link href="/therapists" className={styles.button}>
           מצא מטפל
         </Link>
-        <Link href="/submit-story" className={styles.buttonSecondary}>
-          שתף סיפור
-        </Link>
+        {isAuthenticated && (
+          <Link href="/submit-story" className={styles.buttonSecondary}>
+            שתף סיפור
+          </Link>
+        )}
       </div>
     </main>
   )

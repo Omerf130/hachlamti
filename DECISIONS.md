@@ -236,6 +236,56 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ---
 
+### 2024-12-XX - Navigation and Home Page Authorization Rules (MVP)
+
+**Context:** Spec update requires navigation buttons and home page CTA visibility to be driven by authentication state.
+
+**Decision:** Implement authentication-based visibility for navigation and home page:
+
+**Navigation Rules:**
+- **Guest Users (Not Authenticated):**
+  - Show "Sign Up" button (links to `/admin/login`)
+  - Show "Log In" button (links to `/admin/login`)
+  - Hide "Share Story" button
+  - Hide "Log Out" button
+
+- **Authenticated Users (Non-Admin):**
+  - Show "Share Story" button (links to `/submit-story`)
+  - Show "Log Out" button (calls `signOut()`)
+  - Hide "Sign Up" and "Log In" buttons
+
+- **Admin Users:**
+  - Same as authenticated users (admin-specific navigation handled separately in admin layout)
+
+**Home Page CTA Rules:**
+- "Share Story" button only visible if user is authenticated
+- No alternative CTA for logged-out users in MVP
+
+**Implementation:**
+- Navigation converted to Client Component to access `useSession()` hook
+- SessionProvider wrapper added to root layout to enable session access
+- Home page uses `getServerSession()` to check authentication server-side
+- Logout uses NextAuth's `signOut()` with callback URL to current page
+- All visibility logic centralized in Navigation component
+
+**Note:**
+- "Sign Up" button currently redirects to login page (MVP uses single login system)
+- Can be updated later when separate sign-up flow is implemented
+
+**Rationale:**
+- Clear separation between authenticated and guest user experiences
+- Prevents guest users from seeing CTAs that require authentication
+- Centralized logic ensures consistency across all pages
+- Server-side auth check on home page prevents flash of wrong content
+
+**Impact:**
+- Navigation component now requires SessionProvider wrapper
+- Navigation visibility changes based on authentication state
+- Home page CTA conditionally rendered based on auth state
+- Logout functionality added to navigation
+
+---
+
 ## Format
 
 Each decision entry should follow this format:
