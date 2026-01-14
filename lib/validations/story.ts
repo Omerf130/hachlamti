@@ -27,43 +27,48 @@ export const PrivacyLevelSchema = z.enum([
 export type PrivacyLevel = z.infer<typeof PrivacyLevelSchema>
 
 /**
+ * Base schema for story creation (without refine for form compatibility)
+ * Used in StorySubmissionForm to avoid TypeScript deep inference issues
+ */
+export const createStoryBaseSchema = z.object({
+  privacyLevel: PrivacyLevelSchema,
+  submitterName: z.string().trim().optional(),
+  medicalCondition: z.string().min(1),
+  treatmentCategory: z.string().min(1),
+  treatmentProcess: z.string().min(1),
+  duration: z.string().optional(),
+  outcome: z.string().optional(),
+  therapistId: z.string().optional(),
+  therapistNameRaw: z.string().optional(),
+  transcript: z.string().optional(),
+})
+
+/**
  * Schema for creating a new story
  * Used in createStory Server Action
  * Validates submitterName requirements based on privacyLevel
  */
-export const createStorySchema = z
-  .object({
-    privacyLevel: PrivacyLevelSchema,
-    submitterName: z.string().trim().optional(),
-    medicalCondition: z.string().min(1),
-    treatmentCategory: z.string().min(1),
-    treatmentProcess: z.string().min(1),
-    duration: z.string().optional(),
-    outcome: z.string().optional(),
-    therapistId: z.string().optional(),
-    therapistNameRaw: z.string().optional(),
-    transcript: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      // FULL_NAME and FIRST_NAME_LAST_INITIAL require submitterName
-      if (
-        (data.privacyLevel === 'FULL_NAME' ||
-          data.privacyLevel === 'FIRST_NAME_LAST_INITIAL') &&
-        (!data.submitterName || data.submitterName.trim().length === 0)
-      ) {
-        return false
-      }
-      return true
-    },
-    {
-      message:
-        'submitterName is required for FULL_NAME and FIRST_NAME_LAST_INITIAL privacy levels',
-      path: ['submitterName'],
+export const createStorySchema = createStoryBaseSchema.refine(
+  (data) => {
+    // FULL_NAME and FIRST_NAME_LAST_INITIAL require submitterName
+    if (
+      (data.privacyLevel === 'FULL_NAME' ||
+        data.privacyLevel === 'FIRST_NAME_LAST_INITIAL') &&
+      (!data.submitterName || data.submitterName.trim().length === 0)
+    ) {
+      return false
     }
-  )
+    return true
+  },
+  {
+    message:
+      'submitterName is required for FULL_NAME and FIRST_NAME_LAST_INITIAL privacy levels',
+    path: ['submitterName'],
+  }
+)
 
 export type CreateStoryInput = z.infer<typeof createStorySchema>
+export type CreateStoryBaseInput = z.infer<typeof createStoryBaseSchema>
 
 /**
  * Schema for updating story status
