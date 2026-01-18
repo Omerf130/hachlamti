@@ -30,12 +30,9 @@ export default async function StoryDetailPage({
     <main className={sharedStyles.main}>
       <article className={sharedStyles.container}>
         <header className={sharedStyles.header}>
-          <h1 className={sharedStyles.title}>{story.displayName}</h1>
+          <h1 className={sharedStyles.title}>{story.title}</h1>
           <div className={sharedStyles.meta}>
-            <span className={styles.category}>{story.treatmentCategory}</span>
-            {story.medicalCondition && (
-              <span className={styles.condition}>{story.medicalCondition}</span>
-            )}
+            <span className={styles.author}>{story.displayName}</span>
             {story.publishedAt && (
               <time className={styles.date}>
                 {new Date(story.publishedAt).toLocaleDateString('he-IL', {
@@ -49,29 +46,39 @@ export default async function StoryDetailPage({
         </header>
 
         <div className={sharedStyles.content}>
-          {story.therapistDisplayName && (
-            <div className={styles.therapist}>
-              <strong>מטפל:</strong> {story.therapistDisplayName}
-            </div>
-          )}
-
-          <section className={sharedStyles.section}>
-            <h2 className={sharedStyles.sectionTitle}>תהליך הטיפול</h2>
-            <p className={sharedStyles.text}>{story.treatmentProcess}</p>
-          </section>
-
-          {story.duration && (
+          {story.freeTextStory ? (
             <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>משך הטיפול</h2>
-              <p className={sharedStyles.text}>{story.duration}</p>
+              <p className={sharedStyles.text} style={{ whiteSpace: 'pre-wrap' }}>
+                {story.freeTextStory}
+              </p>
             </section>
-          )}
+          ) : (
+            <>
+              <section className={sharedStyles.section}>
+                <h2 className={sharedStyles.sectionTitle}>הבעיה הרפואית</h2>
+                <p className={sharedStyles.text}>{story.problem}</p>
+              </section>
 
-          {story.outcome && (
-            <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>תוצאות</h2>
-              <p className={sharedStyles.text}>{story.outcome}</p>
-            </section>
+              <section className={sharedStyles.section}>
+                <h2 className={sharedStyles.sectionTitle}>מה ניסיתי קודם?</h2>
+                <p className={sharedStyles.text}>{story.previousAttempts}</p>
+              </section>
+
+              <section className={sharedStyles.section}>
+                <h2 className={sharedStyles.sectionTitle}>הפתרון שעזר</h2>
+                <p className={sharedStyles.text}>{story.solution}</p>
+              </section>
+
+              <section className={sharedStyles.section}>
+                <h2 className={sharedStyles.sectionTitle}>התוצאות - מה המצב שלי היום?</h2>
+                <p className={sharedStyles.text}>{story.results}</p>
+              </section>
+
+              <section className={sharedStyles.section}>
+                <h2 className={sharedStyles.sectionTitle}>מה הייתי אומר למישהו שעובר את זה כרגע?</h2>
+                <p className={sharedStyles.text}>{story.messageToOthers}</p>
+              </section>
+            </>
           )}
         </div>
       </article>

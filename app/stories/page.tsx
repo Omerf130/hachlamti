@@ -30,8 +30,17 @@ export default async function StoriesPage(): Promise<JSX.Element> {
                 href={`/stories/${story._id.toString()}`}
                 className={sharedStyles.link}
               >
-                <div className={styles.storyTitle}>{story.displayName}</div>
-                <div className={styles.storyCategory}>{story.treatmentCategory}</div>
+                <div className={styles.storyTitle}>{story.title}</div>
+                <div className={styles.storyAuthor}>{story.displayName}</div>
+                {story.publishedAt && (
+                  <div className={styles.storyDate}>
+                    {new Date(story.publishedAt).toLocaleDateString('he-IL', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </div>
+                )}
               </Link>
             </li>
           ))}

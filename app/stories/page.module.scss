@@ -7,8 +7,15 @@
   color: var(--color-text);
 }
 
-.storyCategory {
+.storyAuthor {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.storyDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 
