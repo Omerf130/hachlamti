@@ -31,16 +31,14 @@ export default async function TherapistsPage(): Promise<JSX.Element> {
                 className={sharedStyles.link}
               >
                 <div className={styles.therapistName}>{therapist.fullName}</div>
-                {therapist.specialties.length > 0 && (
+                {therapist.treatmentSpecialties.length > 0 && (
                   <div className={styles.therapistSpecialties}>
-                    {therapist.specialties.join(', ')}
+                    {therapist.treatmentSpecialties.join(', ')}
                   </div>
                 )}
-                {therapist.locations.length > 0 && (
-                  <div className={styles.therapistLocations}>
-                    {therapist.locations.join(', ')}
-                  </div>
-                )}
+                <div className={styles.therapistLocation}>
+                  {therapist.geographicArea}
+                </div>
               </Link>
             </li>
           ))}
