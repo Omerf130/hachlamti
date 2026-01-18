@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createStory } from '@/app/actions/story'
@@ -25,11 +25,19 @@ const storyFormSchema = z.object({
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
   freeTextStory: z.string().optional(),
   
-  // C. Declarations
-  declarationTruthful: z.boolean(),
-  declarationConsent: z.boolean(),
-  declarationNotMedicalAdvice: z.boolean(),
-  declarationEditingConsent: z.boolean(),
+  // C. Declarations - must be true
+  declarationTruthful: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר שהסיפור אמיתי ומדויק' }),
+  }),
+  declarationConsent: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר הסכמה לפרסום' }),
+  }),
+  declarationNotMedicalAdvice: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר הבנת אופי השיתוף' }),
+  }),
+  declarationEditingConsent: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר אפשרות לעריכה' }),
+  }),
 })
 
 type StoryFormInput = z.infer<typeof storyFormSchema>
@@ -42,32 +50,22 @@ export default function StorySubmissionForm(): JSX.Element {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<StoryFormInput>({
     resolver: zodResolver(storyFormSchema),
     defaultValues: {
       publicationChoice: 'ANONYMOUS',
       mayContact: true,
-      declarationTruthful: false,
-      declarationConsent: false,
-      declarationNotMedicalAdvice: false,
-      declarationEditingConsent: false,
     },
   })
 
   const onSubmit = async (data: StoryFormInput): Promise<void> => {
+    console.log('Form submitted with data:', data)
     setError('')
     setLoading(true)
 
     try {
-      // Validate declarations
-      if (!data.declarationTruthful || !data.declarationConsent || 
-          !data.declarationNotMedicalAdvice || !data.declarationEditingConsent) {
-        setError('יש לאשר את כל ההצהרות')
-        setLoading(false)
-        return
-      }
-
       const submitData = {
         ...data,
         submissionDate: new Date(),
@@ -81,6 +79,7 @@ export default function StorySubmissionForm(): JSX.Element {
         setError(result.error)
       }
     } catch (err) {
+      console.error('Story submission error:', err)
       setError('שגיאה ביצירת הסיפור. אנא נסה שוב.')
     } finally {
       setLoading(false)
@@ -113,6 +112,20 @@ export default function StorySubmissionForm(): JSX.Element {
 
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           {error && <div className={styles.error}>⚠️ {error}</div>}
+          
+          {/* Debug: Show validation errors */}
+          {Object.keys(errors).length > 0 && (
+            <div className={styles.error}>
+              <strong>שגיאות אימות:</strong>
+              <ul style={{ margin: '0.5rem 0', paddingRight: '1.5rem' }}>
+                {Object.entries(errors).map(([field, error]) => (
+                  <li key={field}>
+                    {field}: {error?.message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
       {/* A. Personal Details */}
       <section className={styles.section}>
@@ -163,26 +176,32 @@ export default function StorySubmissionForm(): JSX.Element {
 
         <div className={styles.field}>
           <label>האם ניתן ליצור איתך קשר להבהרות? *</label>
-          <div className={styles.radioGroup}>
-            <label className={styles.radio}>
-              <input
-                type="radio"
-                value="true"
-                {...register('mayContact', { setValueAs: (v) => v === 'true' })}
-                disabled={loading}
-              />
-              <span>כן</span>
-            </label>
-            <label className={styles.radio}>
-              <input
-                type="radio"
-                value="false"
-                {...register('mayContact', { setValueAs: (v) => v === 'true' })}
-                disabled={loading}
-              />
-              <span>לא</span>
-            </label>
-          </div>
+          <Controller
+            name="mayContact"
+            control={control}
+            render={({ field }) => (
+              <div className={styles.radioGroup}>
+                <label className={styles.radio}>
+                  <input
+                    type="radio"
+                    checked={field.value === true}
+                    onChange={() => field.onChange(true)}
+                    disabled={loading}
+                  />
+                  <span>כן</span>
+                </label>
+                <label className={styles.radio}>
+                  <input
+                    type="radio"
+                    checked={field.value === false}
+                    onChange={() => field.onChange(false)}
+                    disabled={loading}
+                  />
+                  <span>לא</span>
+                </label>
+              </div>
+            )}
+          />
         </div>
 
         <div className={styles.field}>
@@ -310,21 +329,33 @@ export default function StorySubmissionForm(): JSX.Element {
             <input type="checkbox" {...register('declarationTruthful')} disabled={loading} />
             <span>אני מאשר/ת שהסיפור שלי אמיתי ומדויק.</span>
           </label>
+          {errors.declarationTruthful && (
+            <span className={styles.fieldError}>{errors.declarationTruthful.message}</span>
+          )}
           
           <label className={styles.checkbox}>
             <input type="checkbox" {...register('declarationConsent')} disabled={loading} />
             <span>אני מסכים/ה לפרסום הסיפור שלי בפלטפורמה בהתאם לבחירת הפרטיות שלי.</span>
           </label>
+          {errors.declarationConsent && (
+            <span className={styles.fieldError}>{errors.declarationConsent.message}</span>
+          )}
           
           <label className={styles.checkbox}>
             <input type="checkbox" {...register('declarationNotMedicalAdvice')} disabled={loading} />
             <span>אני מבין/ה שהסיפור הזה הוא למטרת שיתוף חוויה בלבד ואינו מחליף ייעוץ רפואי.</span>
           </label>
+          {errors.declarationNotMedicalAdvice && (
+            <span className={styles.fieldError}>{errors.declarationNotMedicalAdvice.message}</span>
+          )}
           
           <label className={styles.checkbox}>
             <input type="checkbox" {...register('declarationEditingConsent')} disabled={loading} />
             <span>אני מבין/ה שהפלטפורמה עשויה לערוך את הסיפור למטרות שפה וכתיב בלבד.</span>
           </label>
+          {errors.declarationEditingConsent && (
+            <span className={styles.fieldError}>{errors.declarationEditingConsent.message}</span>
+          )}
         </div>
       </section>
 
