@@ -1,9 +1,8 @@
 'use server'
 
 import { connectDB } from '@/lib/db'
-import { findOne } from '@/lib/db-queries'
 import { signupSchema } from '@/lib/validations/user'
-import User, { type UserDocument } from '@/models/User'
+import User from '@/models/User'
 import { ZodError } from 'zod'
 import bcrypt from 'bcryptjs'
 
@@ -21,13 +20,13 @@ export async function signup(
     // Connect to database
     await connectDB()
 
-    // Ensure User model is imported
-    await import('@/models/User')
-
     // Check if user already exists
-    const existingUser = await findOne<UserDocument>('User', {
+    // TypeScript workaround for Mongoose type overloads
+    type UserFindOne = (filter: { email: string }) => Promise<InstanceType<typeof User> | null>
+    const existingUser = await (User.findOne as unknown as UserFindOne)({
       email: validated.email.toLowerCase(),
     })
+    
     if (existingUser) {
       return {
         success: false,
@@ -52,6 +51,7 @@ export async function signup(
       userId: user._id.toString(),
     }
   } catch (error) {
+    console.error('Signup error:', error)
     if (error instanceof ZodError) {
       const firstError = error.errors[0]
       return {

@@ -41,8 +41,8 @@ export async function findMany<T extends mongoose.Document>(
     const results = await execResult
 
     return results || []
-  } catch {
-    // Return empty array on any error
+  } catch (error) {
+    console.error(`Error in findMany for model ${modelName}:`, error)
     return []
   }
 }
@@ -60,6 +60,7 @@ export async function findOne<T extends mongoose.Document>(
 
     const Model = getModel<T>(modelName)
     if (!Model) {
+      console.error(`Model ${modelName} not found in mongoose.models`)
       return null
     }
 
@@ -72,8 +73,9 @@ export async function findOne<T extends mongoose.Document>(
     const result = await findOneMethod(filter).exec()
 
     return result
-  } catch {
-    // Return null on any error
+  } catch (error) {
+    // Log error for debugging
+    console.error(`Error in findOne for model ${modelName}:`, error)
     return null
   }
 }
@@ -93,7 +95,8 @@ export async function findOneByIdAndStatus<T extends mongoose.Document>(
       _id: idObj,
       status,
     } as mongoose.FilterQuery<T>)
-  } catch {
+  } catch (error) {
+    console.error(`Error in findOneByIdAndStatus for model ${modelName}:`, error)
     return null
   }
 }

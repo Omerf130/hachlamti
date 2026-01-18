@@ -1,5 +1,6 @@
 import { connectDB } from '@/lib/db'
 import { NextResponse } from 'next/server'
+import mongoose from 'mongoose'
 
 /**
  * Test endpoint to verify MongoDB connection
@@ -8,8 +9,8 @@ import { NextResponse } from 'next/server'
  */
 export async function GET(): Promise<NextResponse> {
   try {
-    const mongoose = await connectDB()
-    const connectionState = mongoose.connection.readyState
+    const mongooseInstance = await connectDB()
+    const connectionState = mongooseInstance.connection.readyState
 
     // MongoDB connection states:
     // 0 = disconnected
@@ -26,14 +27,22 @@ export async function GET(): Promise<NextResponse> {
 
     const stateMessage = stateMessages[connectionState] || 'unknown'
 
+    // Test User model
+    await import('@/models/User')
+    const UserModel = mongoose.models.User
+    const userCount = UserModel ? await UserModel.countDocuments() : 'Model not loaded'
+
     return NextResponse.json(
       {
         success: true,
         message: 'Database connection successful',
         connectionState,
         stateMessage,
-        databaseName: mongoose.connection.name,
-        host: mongoose.connection.host,
+        databaseName: mongooseInstance.connection.name,
+        host: mongooseInstance.connection.host,
+        userModelLoaded: !!UserModel,
+        userCount,
+        models: Object.keys(mongoose.models),
       },
       { status: 200 }
     )
