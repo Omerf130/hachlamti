@@ -1,11 +1,10 @@
 'use client'
 
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createTherapist } from '@/app/actions/therapist'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import styles from './page.module.scss'
 
 // Simplified form schema for client-side (will be validated on server)
@@ -15,10 +14,6 @@ const therapistFormSchema = z.object({
   phoneWhatsApp: z.string().min(1, 'מספר טלפון (ווטסאפ) הוא שדה חובה'),
   treatmentSpecialties: z.string().min(1, 'יש להזין לפחות תחום התמחות אחד'),
   yearsExperience: z.number({ invalid_type_error: 'יש להזין מספר' }).int().min(0),
-  certifications: z.array(z.object({
-    name: z.string().min(1, 'שם תעודה הוא שדה חובה'),
-    fileUrl: z.string().optional(),
-  })),
   
   professionalDescription: z.string().min(1, 'תיאור מקצועי הוא שדה חובה'),
   healthIssues: z.string().min(1, 'יש להזין לפחות בעיה בריאותית אחת'),
@@ -45,9 +40,6 @@ const therapistFormSchema = z.object({
   facebook: z.string().optional(),
   instagram: z.string().optional(),
   
-  profileImageUrl: z.string().optional(),
-  clinicImageUrl: z.string().optional(),
-  
   declarationAccurate: z.boolean(),
   declarationCertified: z.boolean(),
   declarationTerms: z.boolean(),
@@ -60,7 +52,6 @@ const therapistFormSchema = z.object({
 type TherapistFormInput = z.infer<typeof therapistFormSchema>
 
 export default function TherapistApplicationForm(): JSX.Element {
-  const router = useRouter()
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
@@ -68,23 +59,16 @@ export default function TherapistApplicationForm(): JSX.Element {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<TherapistFormInput>({
     resolver: zodResolver(therapistFormSchema),
     defaultValues: {
-      certifications: [{ name: '', fileUrl: '' }],
       declarationAccurate: false,
       declarationCertified: false,
       declarationTerms: false,
       declarationConsent: false,
       declarationResponsibility: false,
     },
-  })
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'certifications',
   })
 
   const parseArrayField = (value: string): string[] => {
@@ -162,7 +146,6 @@ export default function TherapistApplicationForm(): JSX.Element {
         phoneWhatsApp: data.phoneWhatsApp,
         treatmentSpecialties,
         yearsExperience: data.yearsExperience,
-        certifications: data.certifications.filter(c => c.name.trim().length > 0),
         
         professionalDescription: data.professionalDescription,
         healthIssues,
@@ -178,9 +161,6 @@ export default function TherapistApplicationForm(): JSX.Element {
           facebook: data.facebook || undefined,
           instagram: data.instagram || undefined,
         },
-        
-        profileImageUrl: data.profileImageUrl || undefined,
-        clinicImageUrl: data.clinicImageUrl || undefined,
         
         declarationAccurate: true,
         declarationCertified: true,
@@ -207,18 +187,31 @@ export default function TherapistApplicationForm(): JSX.Element {
 
   if (success) {
     return (
-      <div className={styles.success}>
-        <h2>תודה שמילאת את הטופס.</h2>
-        <p>נשמח אם תשתף את טופס סיפורי ההחלמה עם מטופלים שהחלימו בזכות הטיפול שלך,</p>
-        <p>כדי שנוכל לחבר עוד מטופלים לעבודה שלך.</p>
-        <p className={styles.launchNote}>האתר יעלה לאוויר בקרוב.</p>
+      <div className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.success}>
+            <h2>✅ תודה שמילאת את הטופס!</h2>
+            <p>נשמח אם תשתף את טופס סיפורי ההחלמה עם מטופלים שהחלימו בזכות הטיפול שלך,</p>
+            <p>כדי שנוכל לחבר עוד מטופלים לעבודה שלך.</p>
+            <p>האתר יעלה לאוויר בקרוב. 🎉</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-      {error && <div className={styles.error}>{error}</div>}
+    <div className={styles.main}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>הצטרף לרשת המטפלים של הַחלמתי 💚</h1>
+          <p className={styles.subtitle}>
+            עזור לעוד אנשים להחלים. מלא את הפרטים שלך והפרופיל שלך ייבדק לפני שהאתר עולה לאוויר.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+          {error && <div className={styles.error}>⚠️ {error}</div>}
 
       {/* A. Personal & Professional Details */}
       <section className={styles.section}>
@@ -293,42 +286,6 @@ export default function TherapistApplicationForm(): JSX.Element {
           {errors.yearsExperience && (
             <span className={styles.fieldError}>{errors.yearsExperience.message}</span>
           )}
-        </div>
-
-        <div className={styles.field}>
-          <label>תעודות והסמכות</label>
-          {fields.map((field, index) => (
-            <div key={field.id} className={styles.certificationEntry}>
-              <input
-                {...register(`certifications.${index}.name`)}
-                placeholder="שם התעודה"
-                disabled={loading}
-              />
-              <input
-                {...register(`certifications.${index}.fileUrl`)}
-                placeholder="קישור לקובץ (אופציונלי)"
-                disabled={loading}
-              />
-              {fields.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className={styles.removeButton}
-                  disabled={loading}
-                >
-                  הסר
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => append({ name: '', fileUrl: '' })}
-            className={styles.addButton}
-            disabled={loading}
-          >
-            + הוסף תעודה
-          </button>
         </div>
       </section>
 
@@ -504,32 +461,6 @@ export default function TherapistApplicationForm(): JSX.Element {
         </div>
       </section>
 
-      {/* E. Images */}
-      <section className={styles.section}>
-        <h2>תמונות (אופציונלי)</h2>
-        <p className={styles.hint}>בשלב זה, הזן קישורים לתמונות</p>
-        <div className={styles.field}>
-          <label htmlFor="profileImageUrl">תמונת פרופיל</label>
-          <input
-            id="profileImageUrl"
-            type="url"
-            {...register('profileImageUrl')}
-            placeholder="https://..."
-            disabled={loading}
-          />
-        </div>
-        <div className={styles.field}>
-          <label htmlFor="clinicImageUrl">תמונת קליניקה / עסק</label>
-          <input
-            id="clinicImageUrl"
-            type="url"
-            {...register('clinicImageUrl')}
-            placeholder="https://..."
-            disabled={loading}
-          />
-        </div>
-      </section>
-
       {/* F. Declarations */}
       <section className={styles.section}>
         <h2>הצהרות ואישורים (חובה) *</h2>
@@ -580,8 +511,10 @@ export default function TherapistApplicationForm(): JSX.Element {
       </section>
 
       <button type="submit" disabled={loading} className={styles.submitButton}>
-        {loading ? 'שולח...' : 'שלח בקשה'}
+        {loading ? '⏳ שולח...' : '📤 שלח בקשה'}
       </button>
     </form>
+      </div>
+    </div>
   )
 }

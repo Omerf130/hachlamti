@@ -13,10 +13,6 @@ export default async function SubmitStoryPage(): Promise<JSX.Element> {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.title}>Sharing the Light 💚</h1>
-      <p className={styles.subtitle}>
-        Your story could be the hope someone else is looking for.
-      </p>
       <StorySubmissionForm />
     </main>
   )

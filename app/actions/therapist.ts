@@ -37,7 +37,6 @@ export async function createTherapist(
       phoneWhatsApp: validated.phoneWhatsApp,
       treatmentSpecialties: validated.treatmentSpecialties,
       yearsExperience: validated.yearsExperience,
-      certifications: validated.certifications,
       
       professionalDescription: validated.professionalDescription,
       healthIssues: validated.healthIssues,
@@ -49,9 +48,6 @@ export async function createTherapist(
       availability: validated.availability,
       
       externalLinks: validated.externalLinks,
-      
-      profileImageUrl: validated.profileImageUrl,
-      clinicImageUrl: validated.clinicImageUrl,
       
       declarationAccurate: validated.declarationAccurate,
       declarationCertified: validated.declarationCertified,

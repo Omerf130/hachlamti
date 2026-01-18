@@ -52,14 +52,6 @@ export const WeeklyAvailabilitySchema = z.object({
 })
 
 /**
- * Certification Schema
- */
-export const CertificationSchema = z.object({
-  name: z.string().min(1, 'שם תעודה הוא שדה חובה'),
-  fileUrl: z.string().optional(),
-})
-
-/**
  * External Links Schema
  */
 export const ExternalLinksSchema = z.object({
@@ -79,7 +71,6 @@ export const createTherapistSchema = z.object({
   phoneWhatsApp: z.string().min(1, 'מספר טלפון (ווטסאפ) הוא שדה חובה'),
   treatmentSpecialties: z.array(z.string()).min(1, 'יש להזין לפחות תחום התמחות אחד'),
   yearsExperience: z.number().int().min(0, 'שנות ניסיון חייבות להיות מספר חיובי'),
-  certifications: z.array(CertificationSchema).min(0),
   
   // B. Professional Profile
   professionalDescription: z.string().min(1, 'תיאור מקצועי הוא שדה חובה'),
@@ -95,11 +86,7 @@ export const createTherapistSchema = z.object({
   // D. External Links
   externalLinks: ExternalLinksSchema.optional(),
   
-  // E. Images (URLs for MVP - file uploads are placeholders)
-  profileImageUrl: z.string().optional(),
-  clinicImageUrl: z.string().optional(),
-  
-  // F. Declarations (all must be true)
+  // E. Declarations (all must be true)
   declarationAccurate: z.literal(true, {
     errorMap: () => ({ message: 'יש לאשר שהמידע מדויק ואמיתי' }),
   }),
@@ -116,7 +103,7 @@ export const createTherapistSchema = z.object({
     errorMap: () => ({ message: 'יש לאשר את הבנת האחריות' }),
   }),
   
-  // G. Additional Notes
+  // F. Additional Notes
   additionalNotes: z.string().optional(),
 })
 

@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createStory } from '@/app/actions/story'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import styles from './page.module.scss'
 
 // Simplified form schema for client-side
@@ -36,7 +35,6 @@ const storyFormSchema = z.object({
 type StoryFormInput = z.infer<typeof storyFormSchema>
 
 export default function StorySubmissionForm(): JSX.Element {
-  const router = useRouter()
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
@@ -91,16 +89,30 @@ export default function StorySubmissionForm(): JSX.Element {
 
   if (success) {
     return (
-      <div className={styles.success}>
-        <h2>תודה רבה על השיתוף.</h2>
-        <p>האתר יעלה לאוויר בקרוב, ואנשים רבים יוכלו לשאוב תקווה והשראה מהסיפור שלך.</p>
+      <div className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.success}>
+            <h2>✨ תודה רבה על השיתוף!</h2>
+            <p>האתר יעלה לאוויר בקרוב, ואנשים רבים יוכלו לשאוב תקווה והשראה מהסיפור שלך.</p>
+            <p>הסיפור שלך יכול לשנות חיים. 💚</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-      {error && <div className={styles.error}>{error}</div>}
+    <div className={styles.main}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>שיתוף האור 💚</h1>
+          <p className={styles.subtitle}>
+            הסיפור שלך יכול להיות התקווה שמישהו אחר מחפש.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+          {error && <div className={styles.error}>⚠️ {error}</div>}
 
       {/* A. Personal Details */}
       <section className={styles.section}>
@@ -275,7 +287,7 @@ export default function StorySubmissionForm(): JSX.Element {
         </div>
 
         <div className={styles.divider}>
-          <span>או לחלופין</span>
+          <p>✨ או לחלופין ✨</p>
         </div>
 
         <div className={styles.field}>
@@ -317,8 +329,10 @@ export default function StorySubmissionForm(): JSX.Element {
       </section>
 
       <button type="submit" disabled={loading} className={styles.submitButton}>
-        {loading ? 'שולח...' : 'שלח סיפור'}
+        {loading ? '⏳ שולח...' : '💌 שלח סיפור'}
       </button>
     </form>
+      </div>
+    </div>
   )
 }

@@ -21,14 +21,6 @@ export type HealthIssue = 'BACK_PAIN' | 'ANXIETY' | 'DIGESTIVE_ISSUES' | 'PTSD' 
 export type Language = 'HEBREW' | 'ENGLISH' | 'RUSSIAN' | 'ARABIC' | 'FRENCH' | 'OTHER'
 
 /**
- * Certification Entry
- */
-export interface Certification {
-  name: string
-  fileUrl?: string
-}
-
-/**
  * Weekly Session Time
  */
 export interface SessionTime {
@@ -78,7 +70,6 @@ export interface TherapistDocument extends mongoose.Document {
   phoneWhatsApp: string
   treatmentSpecialties: string[] // free text/tags
   yearsExperience: number
-  certifications: Certification[]
   
   // B. Professional Profile
   professionalDescription: string
@@ -94,18 +85,14 @@ export interface TherapistDocument extends mongoose.Document {
   // D. External Links
   externalLinks?: ExternalLinks
   
-  // E. Images
-  profileImageUrl?: string
-  clinicImageUrl?: string
-  
-  // F. Declarations (boolean flags - all must be true to submit)
+  // E. Declarations (boolean flags - all must be true to submit)
   declarationAccurate: boolean
   declarationCertified: boolean
   declarationTerms: boolean
   declarationConsent: boolean
   declarationResponsibility: boolean
   
-  // G. Additional Notes
+  // F. Additional Notes
   additionalNotes?: string
   
   createdAt: Date
@@ -146,16 +133,6 @@ const TherapistSchema = new Schema<TherapistDocument>(
     yearsExperience: {
       type: Number,
       required: true,
-    },
-    certifications: {
-      type: [
-        {
-          name: { type: String, required: true },
-          fileUrl: { type: String, required: false },
-        },
-      ],
-      required: true,
-      default: [],
     },
     
     // B. Professional Profile
@@ -201,17 +178,7 @@ const TherapistSchema = new Schema<TherapistDocument>(
       instagram: { type: String, required: false },
     },
     
-    // E. Images
-    profileImageUrl: {
-      type: String,
-      required: false,
-    },
-    clinicImageUrl: {
-      type: String,
-      required: false,
-    },
-    
-    // F. Declarations
+    // E. Declarations
     declarationAccurate: {
       type: Boolean,
       required: true,

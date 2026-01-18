@@ -13,10 +13,6 @@ export default async function ApplyTherapistPage(): Promise<JSX.Element> {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.title}>Join the Hachlamti Therapist Network 💚</h1>
-      <p className={styles.subtitle}>
-        Help more people heal. Fill in your details and your profile will be reviewed before the site goes live.
-      </p>
       <TherapistApplicationForm />
     </main>
   )
