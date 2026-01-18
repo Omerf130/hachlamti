@@ -6,22 +6,108 @@ import mongoose, { Schema, model, models } from 'mongoose'
 export type TherapistStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'
 
 /**
+ * Treatment Location Type
+ */
+export type TreatmentLocationType = 'FIXED_CLINIC' | 'HOME_VISITS' | 'REMOTE' | 'COMBINATION'
+
+/**
+ * Health Issue Option
+ */
+export type HealthIssue = 'BACK_PAIN' | 'ANXIETY' | 'DIGESTIVE_ISSUES' | 'PTSD' | 'DIABETES' | 'OTHER'
+
+/**
+ * Language Option
+ */
+export type Language = 'HEBREW' | 'ENGLISH' | 'RUSSIAN' | 'ARABIC' | 'FRENCH' | 'OTHER'
+
+/**
+ * Certification Entry
+ */
+export interface Certification {
+  name: string
+  fileUrl?: string
+}
+
+/**
+ * Weekly Session Time
+ */
+export interface SessionTime {
+  from: string // HH:MM format
+  to: string // HH:MM format
+}
+
+/**
+ * Day Schedule
+ */
+export interface DaySchedule {
+  sessionA?: SessionTime
+  sessionB?: SessionTime
+}
+
+/**
+ * Weekly Availability
+ */
+export interface WeeklyAvailability {
+  sunday?: DaySchedule
+  monday?: DaySchedule
+  tuesday?: DaySchedule
+  wednesday?: DaySchedule
+  thursday?: DaySchedule
+  friday?: DaySchedule
+  saturday?: DaySchedule
+}
+
+/**
+ * External Links
+ */
+export interface ExternalLinks {
+  website?: string
+  facebook?: string
+  instagram?: string
+}
+
+/**
  * Therapist Document Interface
  */
 export interface TherapistDocument extends mongoose.Document {
   status: TherapistStatus
+  
+  // A. Personal & Professional Details
   fullName: string
-  email?: string
-  phone?: string
-  specialties: string[]
-  languages: string[]
-  targetAudiences: string[]
-  locations: string[]
-  treatmentApproach?: string
-  yearsExperience?: number
-  education?: string
-  certifications?: Record<string, unknown>
-  availability?: Record<string, unknown>
+  email: string
+  phoneWhatsApp: string
+  treatmentSpecialties: string[] // free text/tags
+  yearsExperience: number
+  certifications: Certification[]
+  
+  // B. Professional Profile
+  professionalDescription: string
+  healthIssues: string[] // includes predefined + "other" text
+  languages: string[] // includes predefined + "other" text
+  geographicArea: string
+  clinicAddress?: string
+  treatmentLocations: TreatmentLocationType[]
+  
+  // C. Availability
+  availability: WeeklyAvailability
+  
+  // D. External Links
+  externalLinks?: ExternalLinks
+  
+  // E. Images
+  profileImageUrl?: string
+  clinicImageUrl?: string
+  
+  // F. Declarations (boolean flags - all must be true to submit)
+  declarationAccurate: boolean
+  declarationCertified: boolean
+  declarationTerms: boolean
+  declarationConsent: boolean
+  declarationResponsibility: boolean
+  
+  // G. Additional Notes
+  additionalNotes?: string
+  
   createdAt: Date
   updatedAt: Date
 }
@@ -38,19 +124,46 @@ const TherapistSchema = new Schema<TherapistDocument>(
       default: 'PENDING',
       index: true,
     },
+    
+    // A. Personal & Professional Details
     fullName: {
       type: String,
       required: true,
     },
     email: {
       type: String,
-      required: false,
+      required: true,
     },
-    phone: {
+    phoneWhatsApp: {
       type: String,
-      required: false,
+      required: true,
     },
-    specialties: {
+    treatmentSpecialties: {
+      type: [String],
+      required: true,
+      default: [],
+    },
+    yearsExperience: {
+      type: Number,
+      required: true,
+    },
+    certifications: {
+      type: [
+        {
+          name: { type: String, required: true },
+          fileUrl: { type: String, required: false },
+        },
+      ],
+      required: true,
+      default: [],
+    },
+    
+    // B. Professional Profile
+    professionalDescription: {
+      type: String,
+      required: true,
+    },
+    healthIssues: {
       type: [String],
       required: true,
       default: [],
@@ -60,35 +173,69 @@ const TherapistSchema = new Schema<TherapistDocument>(
       required: true,
       default: [],
     },
-    targetAudiences: {
-      type: [String],
+    geographicArea: {
+      type: String,
       required: true,
-      default: [],
-    },
-    locations: {
-      type: [String],
-      required: true,
-      default: [],
       index: true,
     },
-    treatmentApproach: {
+    clinicAddress: {
       type: String,
       required: false,
     },
-    yearsExperience: {
-      type: Number,
-      required: false,
+    treatmentLocations: {
+      type: [String],
+      required: true,
+      default: [],
     },
-    education: {
-      type: String,
-      required: false,
-    },
-    certifications: {
-      type: Schema.Types.Mixed,
-      required: false,
-    },
+    
+    // C. Availability
     availability: {
       type: Schema.Types.Mixed,
+      required: true,
+    },
+    
+    // D. External Links
+    externalLinks: {
+      website: { type: String, required: false },
+      facebook: { type: String, required: false },
+      instagram: { type: String, required: false },
+    },
+    
+    // E. Images
+    profileImageUrl: {
+      type: String,
+      required: false,
+    },
+    clinicImageUrl: {
+      type: String,
+      required: false,
+    },
+    
+    // F. Declarations
+    declarationAccurate: {
+      type: Boolean,
+      required: true,
+    },
+    declarationCertified: {
+      type: Boolean,
+      required: true,
+    },
+    declarationTerms: {
+      type: Boolean,
+      required: true,
+    },
+    declarationConsent: {
+      type: Boolean,
+      required: true,
+    },
+    declarationResponsibility: {
+      type: Boolean,
+      required: true,
+    },
+    
+    // G. Additional Notes
+    additionalNotes: {
+      type: String,
       required: false,
     },
   },
@@ -99,12 +246,12 @@ const TherapistSchema = new Schema<TherapistDocument>(
 
 // Create indexes
 TherapistSchema.index({ status: 1 })
-TherapistSchema.index({ locations: 1 })
-TherapistSchema.index({ specialties: 1 })
+TherapistSchema.index({ geographicArea: 1 })
+TherapistSchema.index({ treatmentSpecialties: 1 })
+TherapistSchema.index({ healthIssues: 1 })
 
 // Prevent model recompilation in development
 const Therapist =
   models.Therapist || model<TherapistDocument>('Therapist', TherapistSchema)
 
 export default Therapist
-

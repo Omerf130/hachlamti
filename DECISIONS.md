@@ -6,6 +6,91 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ## Decisions Log
 
+### 2026-01-18 - Form Spec Update: Complete Redesign
+
+**Context:** Major specification update received defining complete form structures, fields, and copy for both Therapist Application and Recovery Story Submission forms.
+
+**Decision:** Complete redesign of both forms to match new specification exactly.
+
+**Changes Implemented:**
+
+#### Therapist Application Form (`/apply-therapist`)
+- **Title:** "Join the Hachlamti Therapist Network 💚"
+- **Subtitle:** "Help more people heal. Fill in your details and your profile will be reviewed before the site goes live."
+
+**New Fields Added:**
+- `phoneWhatsApp` (required) - replaces generic `phone`
+- `treatmentSpecialties` (array of strings, free text/tags)
+- `certifications` (dynamic array with name + fileUrl)
+- `professionalDescription` (required long text)
+- `healthIssues` (predefined checkboxes + "Other")
+- `languages` (predefined checkboxes + "Other")
+- `geographicArea` (select dropdown)
+- `clinicAddress` (optional text)
+- `treatmentLocations` (multi-select: FIXED_CLINIC, HOME_VISITS, REMOTE, COMBINATION)
+- `availability` (structured weekly schedule - simplified to notes for MVP)
+- `externalLinks` (website, facebook, instagram - max 3)
+- `profileImageUrl` and `clinicImageUrl` (optional)
+- **5 Required Declaration Checkboxes**
+- `additionalNotes` (optional long text)
+
+**Post-Submission Message:**
+"Thank you for filling out the form. We would appreciate it if you could share the recovery story form with patients who have healed thanks to your treatment, so we can connect more patients to your work. The site will be launching soon."
+
+#### Recovery Story Submission Form (`/submit-story`)
+- **Title:** "Sharing the Light 💚"
+- **Subtitle:** "Your story could be the hope someone else is looking for."
+
+**New Fields Added:**
+- `submitterFullName` (required) - for contact only
+- `submitterPhone` (required) - "Will not be published without explicit approval"
+- `submitterEmail` (required)
+- `submissionDate` (auto-filled)
+- `mayContact` (yes/no boolean)
+- `publicationChoice` (FULL_NAME, FIRST_NAME_ONLY, ANONYMOUS) - replaces `privacyLevel`
+- `title` (required) - e.g., "How I healed from..."
+- `problem` (required long text) - "What was the medical condition?"
+- `previousAttempts` (required long text) - "What did you try before?"
+- `solution` (required long text) - "Type of treatment, description, duration, experience"
+- `results` (required long text) - "What is your condition today?"
+- `messageToOthers` (required long text) - "Message to someone going through this"
+- `freeTextStory` (optional) - Alternative free-form text
+- **4 Required Declaration Checkboxes**
+
+**Post-Submission Message:**
+"Thank you so much for sharing. The site will be launching soon, and many people will be able to draw hope and inspiration from your story."
+
+**Removed Fields:**
+- Therapist: `targetAudiences`, `phone`, `education`
+- Story: `therapistId`, `therapistNameRaw`, `medicalCondition`, `treatmentCategory`, `treatmentProcess`, `duration`, `outcome`, `transcript`
+
+**Rationale:**
+- Exact adherence to specification requirements
+- Clearer field names and purposes
+- Better user experience with structured sections
+- Simplified MVP implementation (e.g., availability as notes instead of complex weekly schedule)
+- Consistent Hebrew copy throughout
+
+**Implementation Notes:**
+1. **File Uploads:** Implemented as URL inputs for MVP (actual file upload can be added later)
+2. **Weekly Availability:** Simplified to free text notes for MVP (complex schedule UI deferred)
+3. **Certifications:** Dynamic array allows adding multiple certifications
+4. **Health Issues & Languages:** Checkbox groups with predefined options + "Other" text field
+5. **Declaration Checkboxes:** All must be checked to submit (enforced client & server-side)
+6. **Display Name Computation:** Updated to use `publicationChoice` instead of `privacyLevel`:
+   - FULL_NAME → full name as-is
+   - FIRST_NAME_ONLY → first name extracted
+   - ANONYMOUS → "אנונימי"
+
+**Impact:**
+- **Breaking Change:** Existing form data structures incompatible
+- Database must be cleared or migrated
+- Forms now match exact specification
+- Better UX with clear sections and field explanations
+- Post-submission messages guide users appropriately
+
+---
+
 ### 2024-12-XX - Mongoose findOne TypeScript Workaround
 
 **Context:** Mongoose v8 with TypeScript strict mode has type inference issues with `findOne()` method, causing "expression is not callable" errors.
@@ -27,26 +112,24 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 **Context:** Specification states "displayName is computed at creation time and stored" but didn't define the exact formula for each privacy level.
 
-**Decision:** DisplayName computation rules by privacy level:
+**Decision:** DisplayName computation rules by publication choice:
 
-1. **FULL_NAME**: `displayName = submitterName.trim()` - submitterName REQUIRED
-2. **FIRST_NAME_LAST_INITIAL**: `displayName = "<FirstName> <LastInitial>."` - submitterName REQUIRED
-   - Extract first token as first name, last token as last name
-   - If only one name: use first name only
-   - Example: "John Doe Smith" → "John S."
-3. **ANONYMOUS**: `displayName = "אנונימי"` - submitterName OPTIONAL
-4. **INTERNAL_ONLY**: `displayName = "פנימי"` - submitterName optional, never shown publicly
+1. **FULL_NAME**: `displayName = submitterFullName.trim()`
+2. **FIRST_NAME_ONLY**: `displayName = "<FirstName>"` - extracted from full name
+   - If only one name: use it as-is
+   - Example: "John Doe" → "John"
+3. **ANONYMOUS**: `displayName = "אנונימי"`
 
 **Rationale:** 
 - Ensures consistent display names stored in database
 - Prevents computation at render time
-- Clear validation rules for each privacy level
-- Hebrew text for anonymous/internal labels matches UI language
+- Clear validation rules for each publication choice
+- Hebrew text for anonymous labels matches UI language
 
 **Impact:** 
 - Server Action must compute displayName before saving
-- Validation schema must enforce submitterName requirements
-- Public queries must filter out INTERNAL_ONLY stories
+- Validation enforces submitterFullName as required
+- Public display uses stored displayName
 
 ---
 
@@ -54,97 +137,26 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 **Context:** Specification requires NextAuth for admin routes but doesn't define admin user model structure.
 
-**Decision:** Use NextAuth with Credentials provider and environment variables for admin authentication (MVP approach).
+**Decision:** Use NextAuth with Credentials provider supporting both environment variables for admin AND database-backed regular users.
 
 **Rationale:** 
-- Simplest approach for MVP - no database model needed
+- Dual authentication: admin via env vars, users via database
 - Single admin user sufficient for MVP scope
+- Regular users can sign up and log in
 - Easy to configure via environment variables
-- Can be upgraded to database-backed admin model later if needed
+- Extensible for future admin management
 
-**Alternatives Considered:**
-- Database-backed Admin model (more complex, not needed for MVP)
-- OAuth providers (overkill for single admin user)
+**Implementation:**
+- Admin credentials in environment variables (ADMIN_EMAIL, ADMIN_PASSWORD)
+- User credentials in MongoDB with bcrypt hashing
+- Admin routes protected via middleware (role === 'admin')
+- Authenticated routes allow any logged-in user
 
 **Impact:** 
-- Admin credentials stored in environment variables (ADMIN_EMAIL, ADMIN_PASSWORD)
-- Admin routes protected via middleware
-- Simple login page at /admin/login
-
----
-
-### 2024 - Ambiguities Identified During Specification Review
-
-**Context:** Initial review of project specification revealed several areas requiring clarification before implementation.
-
-**Ambiguities Identified:**
-
-1. **Story Media Field Structure**
-   - Spec shows `media?: any` in Story model
-   - Unclear: file uploads? URLs? array of objects? storage location?
-   - Impact: Story submission form and display
-
-2. **Therapist Certifications & Availability Fields**
-   - Spec shows `certifications?: any` and `availability?: any`
-   - Unclear: structure, format, validation rules
-   - Impact: Therapist model and forms
-
-3. **Story Transcript Field**
-   - Spec includes `transcript?: string` in Story model
-   - Unclear: purpose, when populated, relationship to main content
-   - Impact: Story model and display
-
-4. **DisplayName Computation Formula**
-   - Spec states "displayName is computed at creation time and stored"
-   - Unclear: exact formula for each privacy level (FULL_NAME, FIRST_NAME_LAST_INITIAL, ANONYMOUS)
-   - Impact: Story creation logic
-
-5. **Admin Authentication Setup**
-   - Spec mentions NextAuth for admin routes but no user/admin model defined
-   - Unclear: admin user model structure, how admins are created, role management
-   - Impact: Admin authentication and authorization
-
-6. **Pagination & Limits**
-   - Spec mentions filters but no pagination strategy
-   - Unclear: page size, infinite scroll vs pagination, total counts
-   - Impact: List pages performance and UX
-
-7. **Search Implementation**
-   - Spec mentions search filters (q parameter) but no search strategy
-   - Unclear: full-text search? which fields? MongoDB text indexes?
-   - Impact: Search functionality
-
-8. **Server Action Error Format**
-   - Spec says "Errors returned in user-safe format" but no structure defined
-   - Unclear: error response shape, validation error format
-   - Impact: Error handling in forms
-
-9. **Environment Variables**
-   - Spec doesn't mention required env vars
-   - Unclear: MongoDB connection string name, NextAuth config vars
-   - Impact: Configuration and deployment
-
-10. **Seed Script Execution**
-    - Spec requires seed data but no execution method specified
-    - Unclear: npm script? standalone file? when to run?
-    - Impact: Development setup
-
-11. **Form Validation Rules**
-    - Spec mentions Zod validation but no field-level rules
-    - Unclear: required fields, string length limits, email/phone formats
-    - Impact: Form validation schemas
-
-12. **File Upload Handling**
-    - If media field involves uploads, no upload strategy specified
-    - Unclear: storage location (local/Vercel Blob/S3), file types, size limits
-    - Impact: Media handling in stories
-
-13. **Therapist Selection in Story Form**
-    - Spec allows linking to therapist or free-text name
-    - Unclear: UI for therapist selection (search dropdown? autocomplete?), how to handle "not in system"
-    - Impact: Story submission form UX
-
-**Status:** Awaiting clarification before implementation begins.
+- Admin can access /admin routes
+- Regular users can access /submit-story and /apply-therapist
+- Login page works for both admin and regular users
+- Simple and secure authentication flow
 
 ---
 
@@ -163,7 +175,7 @@ This document tracks all assumptions, decisions, and architectural choices made 
 1. Home ("/")
 2. Stories ("/stories")
 3. Therapists ("/therapists")
-4. Submit Story ("/submit-story")
+4. Submit Story ("/submit-story") - shown only when authenticated
 
 **Admin Navigation:**
 - Admin routes have a SEPARATE layout
@@ -192,117 +204,36 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ### 2024-12-XX - Authentication & Permissions Model (MVP)
 
-**Context:** Spec update requires authentication for story submission and therapist application. Previously these were assumed to be public actions.
+**Context:** Spec update requires authentication for story submission and therapist application.
 
-**Decision:** Implement three-tier authentication model:
+**Decision:** Implement two-tier authentication model:
 
-1. **Guest Users (Not Authenticated):**
-   - Can view all public content (home, stories list/details, therapists list/details)
-   - Cannot submit stories or apply as therapists
-   - Redirected to login if attempting to access `/submit-story` or `/apply-therapist`
+1. **Regular Users (Authenticated):**
+   - Can sign up via /signup
+   - Can log in via /login
+   - Can submit stories (/submit-story)
+   - Can apply as therapists (/apply-therapist)
+   - Cannot access admin routes
 
-2. **Authenticated Users (Non-Admin):**
-   - Can view all public content
-   - Can submit stories via `/submit-story` (creates Story with status PENDING_REVIEW)
-   - Can apply as therapist via `/apply-therapist` (creates Therapist with status PENDING)
-   - Cannot edit/delete submissions or access admin routes
+2. **Admin Users:**
+   - Log in via /login with admin credentials
+   - Full access to /admin routes
+   - Can approve/reject therapists and stories
+   - Can view all submissions
 
-3. **Admin Users (role = ADMIN):**
-   - All authenticated user permissions
-   - Full access to `/admin/*` routes
-   - Can approve/reject/edit content
-
-**Implementation:**
-- Middleware protects `/submit-story` and `/apply-therapist` routes (require any authenticated user)
-- Server-side auth checks in page components as fallback
-- Login page handles `callbackUrl` query param to redirect after successful login
-- Admin routes protected separately (require admin role)
-
-**Route Name Note:**
-- Spec mentions `/therapist/apply` but implementation uses `/apply-therapist` for consistency with `/submit-story` pattern
-- Can be renamed later if needed
+**Rules:**
+- Guest users can view public content (stories, therapists lists)
+- Authentication required for submission forms
+- Admin role required for /admin routes
+- Middleware enforces route protection
 
 **Rationale:**
-- Ensures content quality by requiring user authentication
-- Simple three-tier model fits MVP needs
-- Middleware + page-level checks provide defense in depth
-- Callback URL pattern provides good UX for redirects
+- Clear separation of concerns
+- Simple role-based access control
+- Secure submission process
+- MVP-appropriate complexity
 
 **Impact:**
-- `/submit-story` and `/apply-therapist` now require authentication
-- Login page redirects to original destination after login
-- Middleware updated to protect authenticated-only routes
-- All public viewing routes remain accessible to guests
-
----
-
-### 2024-12-XX - Navigation and Home Page Authorization Rules (MVP)
-
-**Context:** Spec update requires navigation buttons and home page CTA visibility to be driven by authentication state.
-
-**Decision:** Implement authentication-based visibility for navigation and home page:
-
-**Navigation Rules:**
-- **Guest Users (Not Authenticated):**
-  - Show "Sign Up" button (links to `/admin/login`)
-  - Show "Log In" button (links to `/admin/login`)
-  - Hide "Share Story" button
-  - Hide "Log Out" button
-
-- **Authenticated Users (Non-Admin):**
-  - Show "Share Story" button (links to `/submit-story`)
-  - Show "Log Out" button (calls `signOut()`)
-  - Hide "Sign Up" and "Log In" buttons
-
-- **Admin Users:**
-  - Same as authenticated users (admin-specific navigation handled separately in admin layout)
-
-**Home Page CTA Rules:**
-- "Share Story" button only visible if user is authenticated
-- No alternative CTA for logged-out users in MVP
-
-**Implementation:**
-- Navigation converted to Client Component to access `useSession()` hook
-- SessionProvider wrapper added to root layout to enable session access
-- Home page uses `getServerSession()` to check authentication server-side
-- Logout uses NextAuth's `signOut()` with callback URL to current page
-- All visibility logic centralized in Navigation component
-
-**Note:**
-- "Sign Up" button currently redirects to login page (MVP uses single login system)
-- Can be updated later when separate sign-up flow is implemented
-
-**Rationale:**
-- Clear separation between authenticated and guest user experiences
-- Prevents guest users from seeing CTAs that require authentication
-- Centralized logic ensures consistency across all pages
-- Server-side auth check on home page prevents flash of wrong content
-
-**Impact:**
-- Navigation component now requires SessionProvider wrapper
-- Navigation visibility changes based on authentication state
-- Home page CTA conditionally rendered based on auth state
-- Logout functionality added to navigation
-
----
-
-## Format
-
-Each decision entry should follow this format:
-
-```markdown
-### [Date] - [Brief Title]
-
-**Context:** [What prompted this decision?]
-
-**Decision:** [What was decided?]
-
-**Rationale:** [Why was this approach chosen?]
-
-**Alternatives Considered:** [What other options were evaluated?]
-
-**Impact:** [What does this affect?]
-```
-
----
-
+- Middleware protects authenticated routes
+- Forms require login
+- Admin dashboard is separate and secure

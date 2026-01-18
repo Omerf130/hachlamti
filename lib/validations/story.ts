@@ -15,60 +15,56 @@ export const StoryStatusSchema = z.enum([
 export type StoryStatus = z.infer<typeof StoryStatusSchema>
 
 /**
- * Privacy Level Enum
+ * Publication Choice Enum
  */
-export const PrivacyLevelSchema = z.enum([
+export const PublicationChoiceSchema = z.enum([
   'FULL_NAME',
-  'FIRST_NAME_LAST_INITIAL',
+  'FIRST_NAME_ONLY',
   'ANONYMOUS',
-  'INTERNAL_ONLY',
 ])
 
-export type PrivacyLevel = z.infer<typeof PrivacyLevelSchema>
+export type PublicationChoice = z.infer<typeof PublicationChoiceSchema>
 
 /**
- * Base schema for story creation (without refine for form compatibility)
- * Used in StorySubmissionForm to avoid TypeScript deep inference issues
+ * Schema for creating a new recovery story
+ * Used in createStory Server Action
  */
-export const createStoryBaseSchema = z.object({
-  privacyLevel: PrivacyLevelSchema,
-  submitterName: z.string().trim().optional(),
-  medicalCondition: z.string().min(1),
-  treatmentCategory: z.string().min(1),
-  treatmentProcess: z.string().min(1),
-  duration: z.string().optional(),
-  outcome: z.string().optional(),
-  therapistId: z.string().optional(),
-  therapistNameRaw: z.string().optional(),
-  transcript: z.string().optional(),
+export const createStorySchema = z.object({
+  // A. Personal Details (For Contact Purposes Only)
+  submitterFullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
+  submitterPhone: z.string().min(1, 'מספר טלפון הוא שדה חובה'),
+  submitterEmail: z.string().email('כתובת אימייל לא תקינה'),
+  submissionDate: z.date().default(() => new Date()),
+  mayContact: z.boolean({
+    required_error: 'יש לבחור אם ניתן ליצור קשר להבהרות',
+  }),
+  publicationChoice: PublicationChoiceSchema,
+  
+  // B. Story Content
+  title: z.string().min(1, 'כותרת היא שדה חובה'),
+  problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
+  previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
+  solution: z.string().min(1, 'תיאור הפתרון הוא שדה חובה'),
+  results: z.string().min(1, 'תיאור התוצאות הוא שדה חובה'),
+  messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
+  freeTextStory: z.string().optional(),
+  
+  // C. Declarations (all must be true)
+  declarationTruthful: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר שהסיפור אמיתי ומדויק' }),
+  }),
+  declarationConsent: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר את ההסכמה לפרסום' }),
+  }),
+  declarationNotMedicalAdvice: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר את ההבנה שהסיפור אינו ייעוץ רפואי' }),
+  }),
+  declarationEditingConsent: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר את ההסכמה לעריכת השפה' }),
+  }),
 })
 
-/**
- * Schema for creating a new story
- * Used in createStory Server Action
- * Validates submitterName requirements based on privacyLevel
- */
-export const createStorySchema = createStoryBaseSchema.refine(
-  (data) => {
-    // FULL_NAME and FIRST_NAME_LAST_INITIAL require submitterName
-    if (
-      (data.privacyLevel === 'FULL_NAME' ||
-        data.privacyLevel === 'FIRST_NAME_LAST_INITIAL') &&
-      (!data.submitterName || data.submitterName.trim().length === 0)
-    ) {
-      return false
-    }
-    return true
-  },
-  {
-    message:
-      'submitterName is required for FULL_NAME and FIRST_NAME_LAST_INITIAL privacy levels',
-    path: ['submitterName'],
-  }
-)
-
 export type CreateStoryInput = z.infer<typeof createStorySchema>
-export type CreateStoryBaseInput = z.infer<typeof createStoryBaseSchema>
 
 /**
  * Schema for updating story status
@@ -81,4 +77,3 @@ export const updateStoryStatusSchema = z.object({
 })
 
 export type UpdateStoryStatusInput = z.infer<typeof updateStoryStatusSchema>
-

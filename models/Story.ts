@@ -12,32 +12,43 @@ export type StoryStatus =
   | 'ARCHIVED'
 
 /**
- * Privacy Level Enum
+ * Publication Privacy Choice
  */
-export type PrivacyLevel =
-  | 'FULL_NAME'
-  | 'FIRST_NAME_LAST_INITIAL'
-  | 'ANONYMOUS'
-  | 'INTERNAL_ONLY'
+export type PublicationChoice = 'FULL_NAME' | 'FIRST_NAME_ONLY' | 'ANONYMOUS'
 
 /**
  * Story Document Interface
  */
 export interface StoryDocument extends mongoose.Document {
   status: StoryStatus
-  privacyLevel: PrivacyLevel
-  submitterName?: string
+  
+  // A. Personal Details (For Contact Purposes Only)
+  submitterFullName: string
+  submitterPhone: string
+  submitterEmail: string
+  submissionDate: Date
+  mayContact: boolean
+  publicationChoice: PublicationChoice
+  
+  // B. Story Content
+  title: string
+  problem: string // The medical condition
+  previousAttempts: string // What was tried before
+  solution: string // Type of treatment, description, duration, experience
+  results: string // Current condition
+  messageToOthers: string // Message to someone going through this
+  freeTextStory?: string // Alternative: full story written freely
+  
+  // C. Declarations (boolean flags - all must be true to submit)
+  declarationTruthful: boolean
+  declarationConsent: boolean
+  declarationNotMedicalAdvice: boolean
+  declarationEditingConsent: boolean
+  
+  // Computed display name based on publicationChoice
   displayName: string
-  medicalCondition: string
-  treatmentCategory: string
-  treatmentProcess: string
-  duration?: string
-  outcome?: string
-  therapistId?: mongoose.Types.ObjectId
-  therapistDisplayName?: string
-  therapistNameRaw?: string
-  media?: Record<string, unknown>
-  transcript?: string
+  
+  // Dates
   submittedAt: Date
   publishedAt?: Date
   createdAt: Date
@@ -60,66 +71,94 @@ const StorySchema = new Schema<StoryDocument>(
         'ARCHIVED',
       ],
       required: true,
-      default: 'DRAFT',
+      default: 'PENDING_REVIEW',
       index: true,
     },
-    privacyLevel: {
+    
+    // A. Personal Details
+    submitterFullName: {
       type: String,
-      enum: ['FULL_NAME', 'FIRST_NAME_LAST_INITIAL', 'ANONYMOUS', 'INTERNAL_ONLY'],
       required: true,
     },
-    submitterName: {
+    submitterPhone: {
+      type: String,
+      required: true,
+    },
+    submitterEmail: {
+      type: String,
+      required: true,
+    },
+    submissionDate: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    mayContact: {
+      type: Boolean,
+      required: true,
+    },
+    publicationChoice: {
+      type: String,
+      enum: ['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS'],
+      required: true,
+    },
+    
+    // B. Story Content
+    title: {
+      type: String,
+      required: true,
+    },
+    problem: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    previousAttempts: {
+      type: String,
+      required: true,
+    },
+    solution: {
+      type: String,
+      required: true,
+    },
+    results: {
+      type: String,
+      required: true,
+    },
+    messageToOthers: {
+      type: String,
+      required: true,
+    },
+    freeTextStory: {
       type: String,
       required: false,
     },
+    
+    // C. Declarations
+    declarationTruthful: {
+      type: Boolean,
+      required: true,
+    },
+    declarationConsent: {
+      type: Boolean,
+      required: true,
+    },
+    declarationNotMedicalAdvice: {
+      type: Boolean,
+      required: true,
+    },
+    declarationEditingConsent: {
+      type: Boolean,
+      required: true,
+    },
+    
+    // Computed display name
     displayName: {
       type: String,
       required: true,
     },
-    medicalCondition: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    treatmentCategory: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    treatmentProcess: {
-      type: String,
-      required: true,
-    },
-    duration: {
-      type: String,
-      required: false,
-    },
-    outcome: {
-      type: String,
-      required: false,
-    },
-    therapistId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Therapist',
-      required: false,
-      index: true,
-    },
-    therapistDisplayName: {
-      type: String,
-      required: false,
-    },
-    therapistNameRaw: {
-      type: String,
-      required: false,
-    },
-    media: {
-      type: Schema.Types.Mixed,
-      required: false,
-    },
-    transcript: {
-      type: String,
-      required: false,
-    },
+    
+    // Dates
     submittedAt: {
       type: Date,
       required: true,
@@ -138,10 +177,9 @@ const StorySchema = new Schema<StoryDocument>(
 
 // Create indexes
 StorySchema.index({ status: 1 })
-StorySchema.index({ medicalCondition: 1 })
-StorySchema.index({ treatmentCategory: 1 })
+StorySchema.index({ problem: 1 })
 StorySchema.index({ submittedAt: 1 })
-StorySchema.index({ therapistId: 1 })
+StorySchema.index({ publishedAt: 1 })
 
 // Prevent model recompilation in development
 const Story = models.Story || model<StoryDocument>('Story', StorySchema)

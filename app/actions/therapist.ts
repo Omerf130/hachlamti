@@ -29,21 +29,37 @@ export async function createTherapist(
     // Connect to database
     await connectDB()
 
-    // Create therapist
+    // Create therapist with new schema fields
     const therapist = new Therapist({
       status: 'PENDING',
       fullName: validated.fullName,
       email: validated.email,
-      phone: validated.phone,
-      specialties: validated.specialties,
-      languages: validated.languages,
-      targetAudiences: validated.targetAudiences,
-      locations: validated.locations,
-      treatmentApproach: validated.treatmentApproach,
+      phoneWhatsApp: validated.phoneWhatsApp,
+      treatmentSpecialties: validated.treatmentSpecialties,
       yearsExperience: validated.yearsExperience,
-      education: validated.education,
       certifications: validated.certifications,
+      
+      professionalDescription: validated.professionalDescription,
+      healthIssues: validated.healthIssues,
+      languages: validated.languages,
+      geographicArea: validated.geographicArea,
+      clinicAddress: validated.clinicAddress,
+      treatmentLocations: validated.treatmentLocations,
+      
       availability: validated.availability,
+      
+      externalLinks: validated.externalLinks,
+      
+      profileImageUrl: validated.profileImageUrl,
+      clinicImageUrl: validated.clinicImageUrl,
+      
+      declarationAccurate: validated.declarationAccurate,
+      declarationCertified: validated.declarationCertified,
+      declarationTerms: validated.declarationTerms,
+      declarationConsent: validated.declarationConsent,
+      declarationResponsibility: validated.declarationResponsibility,
+      
+      additionalNotes: validated.additionalNotes,
     })
 
     await therapist.save()
@@ -53,13 +69,14 @@ export async function createTherapist(
       therapistId: therapist._id.toString(),
     }
   } catch (error) {
+    console.error('Create therapist error:', error)
     if (error instanceof ZodError) {
       const firstError = error.errors[0]
       return {
         success: false,
         error: firstError
-          ? `Validation failed: ${firstError.path.join('.')} - ${firstError.message}`
-          : 'Validation failed',
+          ? `שגיאת אימות: ${firstError.path.join('.')} - ${firstError.message}`
+          : 'שגיאת אימות',
       }
     }
     if (error instanceof Error) {
@@ -70,7 +87,7 @@ export async function createTherapist(
     }
     return {
       success: false,
-      error: 'An unexpected error occurred',
+      error: 'שגיאה בלתי צפויה אירעה',
     }
   }
 }
@@ -100,12 +117,8 @@ export async function updateTherapistStatus(
 
     // Find therapist
     const therapistIdObj = new mongoose.Types.ObjectId(validated.therapistId)
-    // TypeScript workaround: Mongoose findOne has complex overloads
-    // Using unknown to narrow type per CURSOR_RULES.md (no any allowed)
-    const findOneMethod = Therapist.findOne as unknown as (
-      filter: { _id: mongoose.Types.ObjectId }
-    ) => { exec: () => Promise<TherapistDocument | null> }
-    const therapist = await findOneMethod({ _id: therapistIdObj }).exec()
+    type TherapistFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<TherapistDocument | null>
+    const therapist = await (Therapist.findOne as unknown as TherapistFindOne)({ _id: therapistIdObj })
 
     if (!therapist) {
       return {
@@ -147,6 +160,7 @@ export async function updateTherapistStatus(
       success: true,
     }
   } catch (error) {
+    console.error('Update therapist status error:', error)
     if (error instanceof ZodError) {
       const firstError = error.errors[0]
       return {
@@ -168,4 +182,3 @@ export async function updateTherapistStatus(
     }
   }
 }
-

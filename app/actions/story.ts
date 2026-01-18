@@ -4,69 +4,50 @@ import { connectDB } from '@/lib/db'
 import { createStorySchema, updateStoryStatusSchema } from '@/lib/validations/story'
 import Story, { type StoryDocument } from '@/models/Story'
 import ReviewLog from '@/models/ReviewLog'
-import Therapist, { type TherapistDocument } from '@/models/Therapist'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import type { PrivacyLevel } from '@/lib/validations/story'
+import type { PublicationChoice } from '@/lib/validations/story'
 import { ZodError } from 'zod'
 import mongoose from 'mongoose'
 
 /**
- * Computes displayName based on privacyLevel and submitterName
- * @param privacyLevel - The privacy level
- * @param submitterName - The submitter's name (optional)
+ * Computes displayName based on publicationChoice and submitterFullName
+ * @param publicationChoice - How the user wants the story published
+ * @param submitterFullName - The submitter's full name
  * @returns The computed displayName
  */
 function computeDisplayName(
-  privacyLevel: PrivacyLevel,
-  submitterName?: string
+  publicationChoice: PublicationChoice,
+  submitterFullName: string
 ): string {
-  switch (privacyLevel) {
+  switch (publicationChoice) {
     case 'FULL_NAME':
-      if (!submitterName || submitterName.trim().length === 0) {
-        throw new Error('submitterName is required for FULL_NAME privacy level')
-      }
-      return submitterName.trim()
+      return submitterFullName.trim()
 
-    case 'FIRST_NAME_LAST_INITIAL': {
-      if (!submitterName || submitterName.trim().length === 0) {
-        throw new Error(
-          'submitterName is required for FIRST_NAME_LAST_INITIAL privacy level'
-        )
-      }
-      const trimmed = submitterName.trim()
+    case 'FIRST_NAME_ONLY': {
+      const trimmed = submitterFullName.trim()
       const parts = trimmed.split(/\s+/).filter((part) => part.length > 0)
 
       if (parts.length === 0) {
-        throw new Error('submitterName must contain at least one name')
+        return 'אנונימי'
       }
 
-      // If only one name provided, use it as-is
-      if (parts.length === 1) {
-        return parts[0] || ''
-      }
-
-      // First name + last initial
-      const firstName = parts[0] || ''
-      const lastInitial = parts[parts.length - 1]?.[0] || ''
-      return `${firstName} ${lastInitial}.`
+      // Return first name only
+      return parts[0] || 'אנונימי'
     }
 
     case 'ANONYMOUS':
       return 'אנונימי'
 
-    case 'INTERNAL_ONLY':
-      return 'פנימי'
-
     default:
-      throw new Error(`Unknown privacy level: ${privacyLevel}`)
+      throw new Error(`Unknown publication choice: ${publicationChoice}`)
   }
 }
 
 /**
- * Server Action: Create a new story
- * Validates input, computes displayName, and creates story with DRAFT status
+ * Server Action: Create a new recovery story
+ * Validates input, computes displayName, and creates story with PENDING_REVIEW status
  */
 export async function createStory(
   input: unknown
@@ -80,54 +61,35 @@ export async function createStory(
 
     // Compute displayName
     const displayName = computeDisplayName(
-      validated.privacyLevel,
-      validated.submitterName
+      validated.publicationChoice,
+      validated.submitterFullName
     )
 
-    // Handle therapist linking
-    let therapistDisplayName: string | undefined
-    let therapistId: string | undefined
-
-    if (validated.therapistId) {
-      // Verify therapist exists and is approved
-      const therapistIdObj = new mongoose.Types.ObjectId(validated.therapistId)
-      // TypeScript workaround: Mongoose findOne has complex overloads
-      // Using unknown to narrow type per CURSOR_RULES.md (no any allowed)
-      const findOneMethod = Therapist.findOne as unknown as (
-        filter: { _id: mongoose.Types.ObjectId }
-      ) => { exec: () => Promise<TherapistDocument | null> }
-      const therapist = await findOneMethod({ _id: therapistIdObj }).exec()
-      if (!therapist) {
-        return {
-          success: false,
-          error: 'Therapist not found',
-        }
-      }
-      if (therapist.status !== 'APPROVED') {
-        return {
-          success: false,
-          error: 'Therapist is not approved',
-        }
-      }
-      therapistId = validated.therapistId
-      therapistDisplayName = therapist.fullName
-    }
-
-    // Create story
+    // Create story with new schema fields
     const story = new Story({
-      status: 'DRAFT',
-      privacyLevel: validated.privacyLevel,
-      submitterName: validated.submitterName,
+      status: 'PENDING_REVIEW',
+      
+      submitterFullName: validated.submitterFullName,
+      submitterPhone: validated.submitterPhone,
+      submitterEmail: validated.submitterEmail,
+      submissionDate: validated.submissionDate,
+      mayContact: validated.mayContact,
+      publicationChoice: validated.publicationChoice,
+      
+      title: validated.title,
+      problem: validated.problem,
+      previousAttempts: validated.previousAttempts,
+      solution: validated.solution,
+      results: validated.results,
+      messageToOthers: validated.messageToOthers,
+      freeTextStory: validated.freeTextStory,
+      
+      declarationTruthful: validated.declarationTruthful,
+      declarationConsent: validated.declarationConsent,
+      declarationNotMedicalAdvice: validated.declarationNotMedicalAdvice,
+      declarationEditingConsent: validated.declarationEditingConsent,
+      
       displayName,
-      medicalCondition: validated.medicalCondition,
-      treatmentCategory: validated.treatmentCategory,
-      treatmentProcess: validated.treatmentProcess,
-      duration: validated.duration,
-      outcome: validated.outcome,
-      therapistId: therapistId ? therapistId : undefined,
-      therapistDisplayName,
-      therapistNameRaw: validated.therapistNameRaw,
-      transcript: validated.transcript,
       submittedAt: new Date(),
     })
 
@@ -138,13 +100,14 @@ export async function createStory(
       storyId: story._id.toString(),
     }
   } catch (error) {
+    console.error('Create story error:', error)
     if (error instanceof ZodError) {
       const firstError = error.errors[0]
       return {
         success: false,
         error: firstError
-          ? `Validation failed: ${firstError.path.join('.')} - ${firstError.message}`
-          : 'Validation failed',
+          ? `שגיאת אימות: ${firstError.path.join('.')} - ${firstError.message}`
+          : 'שגיאת אימות',
       }
     }
     if (error instanceof Error) {
@@ -155,7 +118,7 @@ export async function createStory(
     }
     return {
       success: false,
-      error: 'An unexpected error occurred',
+      error: 'שגיאה בלתי צפויה אירעה',
     }
   }
 }
@@ -185,12 +148,9 @@ export async function updateStoryStatus(
 
     // Find story
     const storyIdObj = new mongoose.Types.ObjectId(validated.storyId)
-    // TypeScript workaround: Mongoose findOne has complex overloads
-    // Using unknown to narrow type per CURSOR_RULES.md (no any allowed)
-    const findOneMethod = Story.findOne as unknown as (
-      filter: { _id: mongoose.Types.ObjectId }
-    ) => { exec: () => Promise<StoryDocument | null> }
-    const story = await findOneMethod({ _id: storyIdObj }).exec()
+    type StoryFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<StoryDocument | null>
+    const story = await (Story.findOne as unknown as StoryFindOne)({ _id: storyIdObj })
+
     if (!story) {
       return {
         success: false,
@@ -237,6 +197,7 @@ export async function updateStoryStatus(
       success: true,
     }
   } catch (error) {
+    console.error('Update story status error:', error)
     if (error instanceof ZodError) {
       const firstError = error.errors[0]
       return {
@@ -258,4 +219,3 @@ export async function updateStoryStatus(
     }
   }
 }
-
