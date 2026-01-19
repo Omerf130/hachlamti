@@ -5,68 +5,60 @@ import { useRouter } from 'next/navigation'
 import styles from './SuccessMessage.module.scss'
 
 interface SuccessMessageProps {
-  success?: string
+  success?: 'approved' | 'rejected'
 }
 
 export default function SuccessMessage({ success }: SuccessMessageProps) {
   const router = useRouter()
-  const [visible, setVisible] = useState(!!success)
+  const [visible, setVisible] = useState<boolean>(!!success)
 
   useEffect(() => {
-    if (success) {
-      setVisible(true)
-      // Auto-hide after 5 seconds
-      const timer = setTimeout(() => {
-        setVisible(false)
-        // Clean URL after fade out
-        setTimeout(() => {
-          router.replace('/admin/therapists')
-        }, 300)
-      }, 5000)
+    if (!success) return undefined
 
-      return () => clearTimeout(timer)
-    }
+    setVisible(true)
+
+    const timer = setTimeout(() => {
+      setVisible(false)
+
+      setTimeout(() => {
+        router.replace('/admin/therapists')
+      }, 300)
+    }, 5000)
+
+    return () => clearTimeout(timer)
   }, [success, router])
 
   if (!visible || !success) return null
 
-  const getMessage = () => {
-    switch (success) {
-      case 'approved':
-        return {
+  const message =
+    success === 'approved'
+      ? {
           icon: '✓',
           text: 'המטפל אושר בהצלחה! המשתמש קיבל הרשאות THERAPIST.',
           type: 'success',
         }
-      case 'rejected':
-        return {
+      : {
           icon: '✓',
           text: 'הבקשה נדחתה ונמחקה בהצלחה.',
           type: 'warning',
         }
-      default:
-        return null
-    }
-  }
-
-  const message = getMessage()
-  if (!message) return null
 
   return (
     <div className={`${styles.alert} ${styles[message.type]}`}>
       <span className={styles.icon}>{message.icon}</span>
       <span className={styles.text}>{message.text}</span>
+
       <button
+        type="button"
+        className={styles.close}
+        aria-label="סגור"
         onClick={() => {
           setVisible(false)
           setTimeout(() => router.replace('/admin/therapists'), 300)
         }}
-        className={styles.close}
-        aria-label="סגור"
       >
         ✕
       </button>
     </div>
   )
 }
-
