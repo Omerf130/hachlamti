@@ -11,26 +11,35 @@ async function getTherapistApplications() {
     { status: 'PENDING' },
     { createdAt: -1 } // Newest first
   )
-  
+
   return therapists
 }
 
 interface PageProps {
-  searchParams: { success?: string }
+  searchParams: { success?: string | string[] }
 }
 
 export default async function TherapistApplicationsPage({ searchParams }: PageProps) {
   const applications = await getTherapistApplications()
 
+  const successParam = Array.isArray(searchParams.success)
+    ? searchParams.success[0]
+    : searchParams.success
+
+  const success: 'approved' | 'rejected' | undefined =
+    successParam === 'approved' || successParam === 'rejected'
+      ? successParam
+      : undefined
+
   return (
     <div className={styles.container}>
-      <SuccessMessage success={searchParams.success} />
+      <SuccessMessage success={success} />
 
       <div className={styles.header}>
         <h1 className={styles.title}>בקשות מטפלים</h1>
         <p className={styles.subtitle}>
           {applications.length > 0
-            ? `${applications.length} בקשות ממתינות לבדיקה`
+            ? `${applications.length} בקשות ממתינות לבדיקה: ${applications.map((therapist) => therapist.fullName).join(', ')}   `
             : 'אין בקשות ממתינות כרגע'}
         </p>
       </div>
@@ -39,9 +48,7 @@ export default async function TherapistApplicationsPage({ searchParams }: PagePr
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📋</div>
           <h2 className={styles.emptyTitle}>אין בקשות ממתינות</h2>
-          <p className={styles.emptyText}>
-            כל הבקשות נבדקו או שלא הוגשו בקשות חדשות
-          </p>
+          <p className={styles.emptyText}>כל הבקשות נבדקו או שלא הוגשו בקשות חדשות</p>
           <Link href="/admin" className={styles.backButton}>
             חזרה לדשבורד
           </Link>
@@ -66,18 +73,21 @@ export default async function TherapistApplicationsPage({ searchParams }: PagePr
                   <span className={styles.value}>{therapist.phoneWhatsApp}</span>
                 </div>
 
-                {therapist.treatmentSpecialties.length > 0 && (
-                  <div className={styles.field}>
-                    <span className={styles.label}>🎯 התמחויות:</span>
-                    <div className={styles.specialties}>
-                      {therapist.treatmentSpecialties.map((specialty: string, idx: number) => (
-                        <span key={idx} className={styles.specialty}>
-                          {specialty}
-                        </span>
-                      ))}
+                {Array.isArray(therapist.treatmentSpecialties) &&
+                  therapist.treatmentSpecialties.length > 0 && (
+                    <div className={styles.field}>
+                      <span className={styles.label}>🎯 התמחויות:</span>
+                      <div className={styles.specialties}>
+                        {therapist.treatmentSpecialties.map(
+                          (specialty: string, idx: number) => (
+                            <span key={idx} className={styles.specialty}>
+                              {specialty}
+                            </span>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 <div className={styles.field}>
                   <span className={styles.label}>📍 אזור:</span>
@@ -106,7 +116,7 @@ export default async function TherapistApplicationsPage({ searchParams }: PagePr
                   href={`/admin/therapists/${therapist._id.toString()}`}
                   className={styles.reviewButton}
                 >
-                  סקור בקשה
+                  סקור בקשה 
                 </Link>
               </div>
             </div>
@@ -116,4 +126,3 @@ export default async function TherapistApplicationsPage({ searchParams }: PagePr
     </div>
   )
 }
-
