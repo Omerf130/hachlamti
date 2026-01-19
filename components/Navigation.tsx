@@ -31,6 +31,9 @@ export default function Navigation(): JSX.Element {
           <Link href="/submit-story" className={styles.link}>
             שתף סיפור
           </Link>
+          <Link href="/my-stories" className={styles.link}>
+            הסיפורים שלי
+          </Link>
           <button onClick={handleLogout} className={styles.button}>
             התנתק
           </button>

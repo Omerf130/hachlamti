@@ -233,6 +233,80 @@ export async function updateStory(
 }
 
 /**
+ * Server Action: Delete a story (hard delete)
+ * Users can only delete their own stories
+ */
+export async function deleteStory(
+  storyId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user?.id) {
+      return {
+        success: false,
+        error: 'Unauthorized: You must be logged in to delete a story',
+      }
+    }
+
+    // Validate storyId
+    if (!storyId || storyId.trim() === '') {
+      return {
+        success: false,
+        error: 'Story ID is required',
+      }
+    }
+
+    // Connect to database
+    await connectDB()
+
+    // Find story
+    const storyIdObj = new mongoose.Types.ObjectId(storyId)
+    type StoryFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<StoryDocument | null>
+    const story = await (Story.findOne as unknown as StoryFindOne)({ _id: storyIdObj })
+
+    if (!story) {
+      return {
+        success: false,
+        error: 'Story not found',
+      }
+    }
+
+    // Check ownership
+    if (story.authorUserId.toString() !== session.user.id) {
+      return {
+        success: false,
+        error: 'Unauthorized: You can only delete your own stories',
+      }
+    }
+
+    // Hard delete the story
+    type StoryDeleteOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<any>
+    await (Story.deleteOne as unknown as StoryDeleteOne)({ _id: storyIdObj })
+
+    // Revalidate relevant paths
+    revalidatePath('/my-stories')
+    revalidatePath('/stories')
+
+    return {
+      success: true,
+    }
+  } catch (error) {
+    console.error('Delete story error:', error)
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+    return {
+      success: false,
+      error: 'שגיאה בלתי צפויה אירעה',
+    }
+  }
+}
+
+/**
  * Server Action: Update story status (admin only)
  * Validates admin session, updates story status, and logs to ReviewLog
  */
