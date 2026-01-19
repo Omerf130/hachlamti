@@ -3,7 +3,6 @@
 import { connectDB } from '@/lib/db'
 import {
   createTherapistSchema,
-  updateTherapistStatusSchema,
 } from '@/lib/validations/therapist'
 import Therapist from '@/models/Therapist'
 import ReviewLog from '@/models/ReviewLog'
