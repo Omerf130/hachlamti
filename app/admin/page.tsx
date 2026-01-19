@@ -1,19 +1,12 @@
-import { getServerSession } from 'next-auth/next'
-import { redirect } from 'next/navigation'
-import { authOptions } from '@/lib/auth'
-
 export default async function AdminDashboardPage(): Promise<JSX.Element> {
-  const session = await getServerSession(authOptions)
-
-  if (!session || session.user.role !== 'ADMIN') {
-    redirect('/login')
-  }
-
+  // Auth is handled by layout.tsx
+  
   return (
-    <main>
-      <h1>Admin Dashboard</h1>
-      <p>Welcome, {session.user.email}</p>
-    </main>
+    <div>
+      <h1>דשבורד ניהול</h1>
+      <p>ברוך הבא לפאנל הניהול של Hachlamti</p>
+      {/* Stats will be added in Step 2 */}
+    </div>
   )
 }
 

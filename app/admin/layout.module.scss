@@ -1,0 +1,175 @@
+.adminContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo {
+  a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+    font-size: 0.95rem;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.email {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.logoutButton {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.nav {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 2rem;
+  display: flex;
+  gap: 0.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navLink {
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: #555;
+  font-weight: 600;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+
+  &:hover {
+    color: #667eea;
+    background: #f9f9f9;
+  }
+
+  &:global(.active) {
+    color: #667eea;
+    border-bottom-color: #667eea;
+  }
+}
+
+.main {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.footer {
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .logo {
+    order: 3;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    order: 1;
+  }
+
+  .user {
+    order: 2;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nav {
+    padding: 0 1rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .navLink {
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+
+  .main {
+    padding: 1rem;
+  }
+
+  .footer {
+    padding: 1rem;
+  }
+}
+
