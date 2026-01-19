@@ -12,6 +12,7 @@ import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { ZodError } from 'zod'
 import mongoose from 'mongoose'
+import { findOne } from '@/lib/mongoose-helpers'
 
 /**
  * Server Action: Create a new therapist application
@@ -119,13 +120,8 @@ export async function updateTherapistStatus(
     // Validate input
     const validated = updateTherapistStatusSchema.parse(input)
 
-    // Connect to database
-    await connectDB()
-
     // Find therapist
-    const therapistIdObj = new mongoose.Types.ObjectId(validated.therapistId)
-    type TherapistFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<TherapistDocument | null>
-    const therapist = await (Therapist.findOne as unknown as TherapistFindOne)({ _id: therapistIdObj })
+    const therapist = await findOne(Therapist, { _id: new mongoose.Types.ObjectId(validated.therapistId) })
 
     if (!therapist) {
       return {
@@ -141,8 +137,7 @@ export async function updateTherapistStatus(
     // If approved, upgrade user role from BASIC to THERAPIST
     if (validated.status === 'APPROVED') {
       const User = (await import('@/models/User')).default
-      type UserFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<InstanceType<typeof User> | null>
-      const user = await (User.findOne as unknown as UserFindOne)({ _id: therapist.userId })
+      const user = await findOne(User, { _id: therapist.userId })
       
       if (user) {
         user.role = 'THERAPIST'

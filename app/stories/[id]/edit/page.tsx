@@ -1,10 +1,10 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { connectDB } from '@/lib/db'
-import Story, { type StoryDocument } from '@/models/Story'
+import Story from '@/models/Story'
 import StoryEditForm from './StoryEditForm'
 import styles from './page.module.scss'
+import { findById } from '@/lib/mongoose-helpers'
 
 export const metadata = {
   title: 'עריכת סיפור | Hachlamti',
@@ -22,16 +22,8 @@ export default async function EditStoryPage({ params }: PageProps) {
     redirect(`/login?callbackUrl=/stories/${params.id}/edit`)
   }
 
-  await connectDB()
-
   // Fetch the story
-  // TypeScript workaround for Mongoose type overloads
-  type StoryFindById = (id: string) => {
-    lean: () => {
-      exec: () => Promise<StoryDocument | null>
-    }
-  }
-  const story = await (Story.findById as unknown as StoryFindById)(params.id).lean().exec()
+  const story = await findById(Story, params.id)
 
   if (!story) {
     redirect('/my-stories')

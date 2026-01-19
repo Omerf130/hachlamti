@@ -34,6 +34,9 @@ export default function Navigation(): JSX.Element {
           <Link href="/my-stories" className={styles.link}>
             הסיפורים שלי
           </Link>
+          <Link href="/apply-therapist" className={styles.link}>
+            הצטרף כמטפל
+          </Link>
           <button onClick={handleLogout} className={styles.button}>
             התנתק
           </button>

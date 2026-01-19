@@ -1,11 +1,11 @@
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { connectDB } from '@/lib/db'
-import Story, { type StoryDocument } from '@/models/Story'
+import Story from '@/models/Story'
 import Link from 'next/link'
 import DeleteStoryButton from './DeleteStoryButton'
 import styles from './page.module.scss'
+import { findMany } from '@/lib/mongoose-helpers'
 
 export const metadata = {
   title: 'הסיפורים שלי | Hachlamti',
@@ -19,21 +19,8 @@ export default async function MyStoriesPage() {
     redirect('/login?callbackUrl=/my-stories')
   }
 
-  await connectDB()
-
   // Fetch user's stories
-  // TypeScript workaround for Mongoose type overloads
-  type StoryFind = (filter: { authorUserId: string }) => {
-    sort: (sort: any) => {
-      lean: () => {
-        exec: () => Promise<StoryDocument[]>
-      }
-    }
-  }
-  const stories = await (Story.find as unknown as StoryFind)({ authorUserId: session.user.id })
-    .sort({ createdAt: -1 })
-    .lean()
-    .exec()
+  const stories = await findMany(Story, { authorUserId: session.user.id }, { createdAt: -1 })
 
   return (
     <main className={styles.container}>

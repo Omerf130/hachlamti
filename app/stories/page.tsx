@@ -1,17 +1,12 @@
-import { type StoryDocument } from '@/models/Story'
-import { findMany } from '@/lib/db-queries'
+import Story, { type StoryDocument } from '@/models/Story'
+import { findMany } from '@/lib/mongoose-helpers'
 import styles from './page.module.scss'
 import sharedStyles from '@/styles/list-page.module.scss'
 import Link from 'next/link'
 import EmptyState from '@/components/EmptyState'
 
-// Ensure Story model is imported
-import '@/models/Story'
-
 async function getStories(): Promise<StoryDocument[]> {
-  return findMany<StoryDocument>('Story', { status: 'PUBLISHED' }, {
-    publishedAt: -1,
-  })
+  return findMany(Story, { status: 'PUBLISHED' }, { publishedAt: -1 })
 }
 
 export default async function StoriesPage(): Promise<JSX.Element> {

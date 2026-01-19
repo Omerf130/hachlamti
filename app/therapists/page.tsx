@@ -1,17 +1,12 @@
-import { type TherapistDocument } from '@/models/Therapist'
-import { findMany } from '@/lib/db-queries'
+import Therapist, { type TherapistDocument } from '@/models/Therapist'
+import { findMany } from '@/lib/mongoose-helpers'
 import styles from './page.module.scss'
 import sharedStyles from '@/styles/list-page.module.scss'
 import Link from 'next/link'
 import EmptyState from '@/components/EmptyState'
 
-// Ensure Therapist model is imported
-import '@/models/Therapist'
-
 async function getTherapists(): Promise<TherapistDocument[]> {
-  return findMany<TherapistDocument>('Therapist', { status: 'APPROVED' }, {
-    createdAt: -1,
-  })
+  return findMany(Therapist, { status: 'APPROVED' }, { createdAt: -1 })
 }
 
 export default async function TherapistsPage(): Promise<JSX.Element> {

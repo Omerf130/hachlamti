@@ -1,11 +1,8 @@
-import { type StoryDocument } from '@/models/Story'
-import { findOneByIdAndStatus } from '@/lib/db-queries'
+import Story, { type StoryDocument } from '@/models/Story'
+import { findByIdAndStatus } from '@/lib/mongoose-helpers'
 import { notFound } from 'next/navigation'
 import styles from './page.module.scss'
 import sharedStyles from '@/styles/detail-page.module.scss'
-
-// Ensure Story model is imported
-import '@/models/Story'
 
 interface StoryDetailPageProps {
   params: {
@@ -14,7 +11,7 @@ interface StoryDetailPageProps {
 }
 
 async function getStory(id: string): Promise<StoryDocument | null> {
-  return findOneByIdAndStatus<StoryDocument>('Story', id, 'PUBLISHED')
+  return findByIdAndStatus(Story, id, 'PUBLISHED')
 }
 
 export default async function StoryDetailPage({

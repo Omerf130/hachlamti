@@ -1,11 +1,8 @@
-import { type TherapistDocument } from '@/models/Therapist'
-import { findOneByIdAndStatus } from '@/lib/db-queries'
+import Therapist, { type TherapistDocument } from '@/models/Therapist'
+import { findByIdAndStatus } from '@/lib/mongoose-helpers'
 import { notFound } from 'next/navigation'
 import styles from './page.module.scss'
 import sharedStyles from '@/styles/detail-page.module.scss'
-
-// Ensure Therapist model is imported
-import '@/models/Therapist'
 
 interface TherapistDetailPageProps {
   params: {
@@ -14,7 +11,7 @@ interface TherapistDetailPageProps {
 }
 
 async function getTherapist(id: string): Promise<TherapistDocument | null> {
-  return findOneByIdAndStatus<TherapistDocument>('Therapist', id, 'APPROVED')
+  return findByIdAndStatus(Therapist, id, 'APPROVED')
 }
 
 export default async function TherapistDetailPage({

@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 import type { PublicationChoice } from '@/lib/validations/story'
 import { ZodError } from 'zod'
 import mongoose from 'mongoose'
+import { findOne, deleteById } from '@/lib/mongoose-helpers'
 
 /**
  * Computes displayName based on publicationChoice and submitterFullName
@@ -155,13 +156,8 @@ export async function updateStory(
     // Validate input
     const validated = updateStorySchema.parse(input)
 
-    // Connect to database
-    await connectDB()
-
     // Find story
-    const storyIdObj = new mongoose.Types.ObjectId(validated.storyId)
-    type StoryFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<StoryDocument | null>
-    const story = await (Story.findOne as unknown as StoryFindOne)({ _id: storyIdObj })
+    const story = await findOne(Story, { _id: new mongoose.Types.ObjectId(validated.storyId) })
 
     if (!story) {
       return {
@@ -257,13 +253,8 @@ export async function deleteStory(
       }
     }
 
-    // Connect to database
-    await connectDB()
-
     // Find story
-    const storyIdObj = new mongoose.Types.ObjectId(storyId)
-    type StoryFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<StoryDocument | null>
-    const story = await (Story.findOne as unknown as StoryFindOne)({ _id: storyIdObj })
+    const story = await findOne(Story, { _id: new mongoose.Types.ObjectId(storyId) })
 
     if (!story) {
       return {
@@ -281,8 +272,14 @@ export async function deleteStory(
     }
 
     // Hard delete the story
-    type StoryDeleteOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<any>
-    await (Story.deleteOne as unknown as StoryDeleteOne)({ _id: storyIdObj })
+    const deleted = await deleteById(Story, storyId)
+    
+    if (!deleted) {
+      return {
+        success: false,
+        error: 'Failed to delete story',
+      }
+    }
 
     // Revalidate relevant paths
     revalidatePath('/my-stories')
@@ -326,13 +323,8 @@ export async function updateStoryStatus(
     // Validate input
     const validated = updateStoryStatusSchema.parse(input)
 
-    // Connect to database
-    await connectDB()
-
     // Find story
-    const storyIdObj = new mongoose.Types.ObjectId(validated.storyId)
-    type StoryFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<StoryDocument | null>
-    const story = await (Story.findOne as unknown as StoryFindOne)({ _id: storyIdObj })
+    const story = await findOne(Story, { _id: new mongoose.Types.ObjectId(validated.storyId) })
 
     if (!story) {
       return {
