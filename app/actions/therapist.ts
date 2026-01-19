@@ -5,7 +5,7 @@ import {
   createTherapistSchema,
   updateTherapistStatusSchema,
 } from '@/lib/validations/therapist'
-import Therapist, { type TherapistDocument } from '@/models/Therapist'
+import Therapist from '@/models/Therapist'
 import ReviewLog from '@/models/ReviewLog'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'

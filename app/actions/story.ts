@@ -2,7 +2,7 @@
 
 import { connectDB } from '@/lib/db'
 import { createStorySchema, updateStorySchema, updateStoryStatusSchema } from '@/lib/validations/story'
-import Story, { type StoryDocument } from '@/models/Story'
+import Story from '@/models/Story'
 import ReviewLog from '@/models/ReviewLog'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
