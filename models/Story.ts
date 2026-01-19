@@ -20,6 +20,7 @@ export type PublicationChoice = 'FULL_NAME' | 'FIRST_NAME_ONLY' | 'ANONYMOUS'
  * Story Document Interface
  */
 export interface StoryDocument extends mongoose.Document {
+  authorUserId: mongoose.Types.ObjectId
   status: StoryStatus
   
   // A. Personal Details (For Contact Purposes Only)
@@ -60,6 +61,12 @@ export interface StoryDocument extends mongoose.Document {
  */
 const StorySchema = new Schema<StoryDocument>(
   {
+    authorUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
     status: {
       type: String,
       enum: [
@@ -71,7 +78,7 @@ const StorySchema = new Schema<StoryDocument>(
         'ARCHIVED',
       ],
       required: true,
-      default: 'PENDING_REVIEW',
+      default: 'PUBLISHED',
       index: true,
     },
     

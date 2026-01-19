@@ -91,6 +91,257 @@ This document tracks all assumptions, decisions, and architectural choices made 
 
 ---
 
+### 2026-01-19 - CONSOLIDATED SPEC UPDATE: Authentication, Roles & Story Workflow
+
+**Context:** Major consolidated specification update fundamentally changed authentication model, user roles, story approval workflow, and permissions.
+
+**Decision:** Complete system redesign to match consolidated spec requirements.
+
+---
+
+#### A. User Roles System (BREAKING CHANGE)
+
+**Old System:**
+- Roles: `'user' | 'admin'`
+- Default on signup: `'user'`
+
+**New System:**
+- Roles: `'BASIC' | 'THERAPIST' | 'ADMIN'`
+- Default on signup: `'BASIC'`
+
+**Role Definitions:**
+
+1. **BASIC** (default):
+   - Can create recovery stories
+   - Can edit their own stories
+   - Can submit therapist applications
+   - Cannot edit other users' stories
+   - Cannot access admin functionality
+
+2. **THERAPIST**:
+   - All BASIC permissions
+   - Can view their therapist profile
+   - Can edit their therapist profile
+   - Role granted ONLY after admin approves therapist application
+
+3. **ADMIN**:
+   - Full system access
+   - Can approve therapist applications
+   - Approving therapist upgrades user role from BASIC → THERAPIST
+   - Manual role assignment only
+
+**Rationale:**
+- Clear progression path: BASIC → THERAPIST
+- Single source of truth for user capabilities
+- Therapist status tied directly to user role
+- Simple role-based authorization checks
+
+---
+
+#### B. Story Workflow (MAJOR CHANGE)
+
+**Old System:**
+- Stories created with status = `PENDING_REVIEW`
+- Required admin approval before publication
+- Admin workflow for story moderation
+
+**New System:**
+- Stories published IMMEDIATELY upon creation
+- Story.status = `PUBLISHED` by default
+- NO admin approval required
+- Users can edit their OWN stories
+- Edited stories remain PUBLISHED (no re-approval)
+
+**Story Ownership:**
+- `Story.authorUserId` field (required) - references User._id
+- Authorization enforced server-side
+- Users can only edit stories where `story.authorUserId === session.user.id`
+
+**Rationale:**
+- Reduces friction for story submissions
+- Empowers users to share experiences immediately
+- No moderation bottleneck
+- Focus admin time on therapist vetting only
+- Users maintain control over their own content
+
+**Admin Scope for Stories:**
+- Admins do NOT approve, review, or moderate stories in MVP
+- Optional deletion/hiding by admin is out of scope
+- Story management may be added in future versions
+
+---
+
+#### C. Therapist Application Workflow
+
+**Process:**
+1. BASIC user submits therapist application
+2. Creates Therapist document with:
+   - `userId` (references User._id)
+   - `status = PENDING`
+3. Admin reviews application
+4. On approval:
+   - `Therapist.status` → `APPROVED`
+   - `User.role` → upgraded from `BASIC` to `THERAPIST`
+
+**This is the ONLY admin approval workflow in MVP.**
+
+**Public Visibility:**
+- Only APPROVED therapists appear on public routes:
+  - `/therapists` (list)
+  - `/therapists/[id]` (detail)
+
+---
+
+#### D. Permissions Summary
+
+| Action                          | Guest | BASIC | THERAPIST | ADMIN |
+|---------------------------------|-------|-------|-----------|-------|
+| View public content             | ✓     | ✓     | ✓         | ✓     |
+| Sign up / Log in                | ✓     | -     | -         | -     |
+| Create stories                  | ✗     | ✓     | ✓         | ✓     |
+| Edit own stories                | ✗     | ✓     | ✓         | ✓     |
+| Edit others' stories            | ✗     | ✗     | ✗         | ✗     |
+| Submit therapist application    | ✗     | ✓     | ✓         | ✓     |
+| View own therapist profile      | ✗     | ✗     | ✓         | ✓     |
+| Edit own therapist profile      | ✗     | ✗     | ✓         | ✓     |
+| Approve therapist applications  | ✗     | ✗     | ✗         | ✓     |
+| Access admin dashboard          | ✗     | ✗     | ✗         | ✓     |
+
+---
+
+#### E. Navigation Changes
+
+**Main Navigation Rules:**
+
+**Logged-out users see:**
+- "Sign Up"
+- "Log In"
+
+**Logged-in users (BASIC, THERAPIST, or ADMIN) see:**
+- "Share Story" (visible on navigation)
+- "Log Out"
+- Do NOT see "Sign Up" or "Log In"
+
+**Home Page CTA:**
+- "Share Story" CTA visible ONLY to logged-in users
+
+---
+
+#### F. Data Model Changes
+
+**User Model:**
+```typescript
+{
+  _id: ObjectId
+  email: string (unique)
+  password: string (hashed with bcrypt)
+  role: 'BASIC' | 'THERAPIST' | 'ADMIN'
+  createdAt: Date
+  updatedAt: Date
+}
+```
+
+**Story Model:**
+```typescript
+{
+  _id: ObjectId
+  authorUserId: ObjectId (required, indexed, ref: 'User')
+  status: 'PUBLISHED' (default)
+  // ... other story fields
+}
+```
+
+**Therapist Model:**
+```typescript
+{
+  _id: ObjectId
+  userId: ObjectId (required, indexed, ref: 'User')
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'
+  // ... other therapist fields
+}
+```
+
+---
+
+#### G. Implementation Changes
+
+**Files Modified:**
+1. `models/User.ts` - Role enum changed to `'BASIC' | 'THERAPIST' | 'ADMIN'`
+2. `models/Story.ts` - Added `authorUserId` field, default status = `PUBLISHED`
+3. `models/Therapist.ts` - Added `userId` field
+4. `types/next-auth.d.ts` - Updated role types
+5. `app/actions/user.ts` - Set role to `'BASIC'` on signup
+6. `app/actions/story.ts` - 
+   - `createStory` requires auth, sets `authorUserId`, status = `PUBLISHED`, sets `publishedAt`
+   - New `updateStory` action for users to edit their own stories
+   - Updated role checks to use `'ADMIN'`
+7. `app/actions/therapist.ts` - 
+   - `createTherapist` requires auth, sets `userId`
+   - `updateTherapistStatus` upgrades User.role to `'THERAPIST'` on approval
+   - Updated role checks to use `'ADMIN'`
+8. `lib/validations/story.ts` - Added `updateStorySchema` for story editing
+9. `lib/auth.ts` - Admin role set to `'ADMIN'`
+10. `middleware.ts` - Updated role checks to `'ADMIN'`
+11. `components/Navigation.tsx` - Already correct (shows "Share Story" only when authenticated)
+12. `app/page.tsx` - Already correct (shows "Share Story" CTA only when authenticated)
+
+---
+
+#### H. Breaking Changes
+
+**Database:**
+- All existing users need role migration: `'user'` → `'BASIC'`, `'admin'` → `'ADMIN'`
+- All existing stories need `authorUserId` field populated
+- All existing therapists need `userId` field populated
+
+**Authentication:**
+- Middleware now checks for `role === 'ADMIN'` instead of `role === 'admin'`
+- Session type now explicitly types role as union
+
+**Story Workflow:**
+- Stories no longer require admin approval
+- Story status changes from `PENDING_REVIEW` to `PUBLISHED` by default
+
+---
+
+#### I. Rationale for Changes
+
+1. **Clearer Role Progression:**
+   - BASIC → THERAPIST path is explicit and automatic
+   - Role determines capabilities throughout system
+   - Single source of truth for permissions
+
+2. **Reduced Admin Overhead:**
+   - No story moderation required
+   - Admin focuses on therapist vetting only
+   - Faster content publication
+
+3. **User Empowerment:**
+   - Stories published immediately
+   - Users can edit their own content
+   - Lower barrier to sharing experiences
+
+4. **Simplified Architecture:**
+   - Single approval workflow (therapists only)
+   - Clear ownership model for content
+   - Consistent authorization patterns
+
+---
+
+#### J. Authority
+
+This consolidated update is AUTHORITATIVE and overrides ALL previous specs regarding:
+- Story approval workflow
+- Authentication scope
+- User roles
+- Form fields
+- File uploads
+- Navigation permissions
+
+**Any ambiguity MUST be documented in DECISIONS.md before implementation.**
+
+---
+
 ### 2024-12-XX - Mongoose findOne TypeScript Workaround
 
 **Context:** Mongoose v8 with TypeScript strict mode has type inference issues with `findOne()` method, causing "expression is not callable" errors.

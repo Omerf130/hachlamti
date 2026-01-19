@@ -13,7 +13,7 @@ export default withAuth(
 
     // Require admin role for admin routes
     if (pathname.startsWith('/admin')) {
-      if (token?.role !== 'admin') {
+      if (token?.role !== 'ADMIN') {
         const loginUrl = new URL('/login', req.url)
         loginUrl.searchParams.set('callbackUrl', pathname)
         return NextResponse.redirect(loginUrl)
@@ -45,7 +45,7 @@ export default withAuth(
 
         // Require admin role for admin routes
         if (pathname.startsWith('/admin')) {
-          return token?.role === 'admin'
+          return token?.role === 'ADMIN'
         }
 
         // Require authentication for authenticated-only routes

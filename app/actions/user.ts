@@ -41,7 +41,7 @@ export async function signup(
     const user = new User({
       email: validated.email.toLowerCase(),
       password: hashedPassword,
-      role: 'user',
+      role: 'BASIC',
     })
 
     await user.save()

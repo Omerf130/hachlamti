@@ -1,7 +1,7 @@
 'use server'
 
 import { connectDB } from '@/lib/db'
-import { createStorySchema, updateStoryStatusSchema } from '@/lib/validations/story'
+import { createStorySchema, updateStorySchema, updateStoryStatusSchema } from '@/lib/validations/story'
 import Story, { type StoryDocument } from '@/models/Story'
 import ReviewLog from '@/models/ReviewLog'
 import { getServerSession } from 'next-auth/next'
@@ -47,12 +47,22 @@ function computeDisplayName(
 
 /**
  * Server Action: Create a new recovery story
- * Validates input, computes displayName, and creates story with PENDING_REVIEW status
+ * Validates input, computes displayName, and creates story with PUBLISHED status
+ * Stories are published immediately upon creation (no admin approval required)
  */
 export async function createStory(
   input: unknown
 ): Promise<{ success: true; storyId: string } | { success: false; error: string }> {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user?.id) {
+      return {
+        success: false,
+        error: 'Unauthorized: You must be logged in to submit a story',
+      }
+    }
+
     // Validate input
     const validated = createStorySchema.parse(input)
 
@@ -67,7 +77,8 @@ export async function createStory(
 
     // Create story with new schema fields
     const story = new Story({
-      status: 'PENDING_REVIEW',
+      authorUserId: new mongoose.Types.ObjectId(session.user.id),
+      status: 'PUBLISHED',
       
       submitterFullName: validated.submitterFullName,
       submitterPhone: validated.submitterPhone,
@@ -91,6 +102,7 @@ export async function createStory(
       
       displayName,
       submittedAt: new Date(),
+      publishedAt: new Date(),
     })
 
     await story.save()
@@ -124,6 +136,103 @@ export async function createStory(
 }
 
 /**
+ * Server Action: Update a story (user edit)
+ * Users can edit only their own stories
+ */
+export async function updateStory(
+  input: unknown
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user?.id) {
+      return {
+        success: false,
+        error: 'Unauthorized: You must be logged in to edit a story',
+      }
+    }
+
+    // Validate input
+    const validated = updateStorySchema.parse(input)
+
+    // Connect to database
+    await connectDB()
+
+    // Find story
+    const storyIdObj = new mongoose.Types.ObjectId(validated.storyId)
+    type StoryFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<StoryDocument | null>
+    const story = await (Story.findOne as unknown as StoryFindOne)({ _id: storyIdObj })
+
+    if (!story) {
+      return {
+        success: false,
+        error: 'Story not found',
+      }
+    }
+
+    // Check ownership
+    if (story.authorUserId.toString() !== session.user.id) {
+      return {
+        success: false,
+        error: 'Unauthorized: You can only edit your own stories',
+      }
+    }
+
+    // Update story fields
+    story.submitterFullName = validated.submitterFullName
+    story.submitterPhone = validated.submitterPhone
+    story.submitterEmail = validated.submitterEmail
+    story.mayContact = validated.mayContact
+    story.publicationChoice = validated.publicationChoice
+    
+    story.title = validated.title
+    story.problem = validated.problem
+    story.previousAttempts = validated.previousAttempts
+    story.solution = validated.solution
+    story.results = validated.results
+    story.messageToOthers = validated.messageToOthers
+    story.freeTextStory = validated.freeTextStory
+
+    // Recompute displayName
+    story.displayName = computeDisplayName(
+      validated.publicationChoice,
+      validated.submitterFullName
+    )
+
+    await story.save()
+
+    // Revalidate relevant paths
+    revalidatePath('/stories')
+    revalidatePath(`/stories/${validated.storyId}`)
+
+    return {
+      success: true,
+    }
+  } catch (error) {
+    console.error('Update story error:', error)
+    if (error instanceof ZodError) {
+      const firstError = error.errors[0]
+      return {
+        success: false,
+        error: firstError
+          ? `שגיאת אימות: ${firstError.path.join('.')} - ${firstError.message}`
+          : 'שגיאת אימות',
+      }
+    }
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+    return {
+      success: false,
+      error: 'שגיאה בלתי צפויה אירעה',
+    }
+  }
+}
+
+/**
  * Server Action: Update story status (admin only)
  * Validates admin session, updates story status, and logs to ReviewLog
  */
@@ -133,7 +242,7 @@ export async function updateStoryStatus(
   try {
     // Check admin authentication
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'admin') {
+    if (!session || session.user.role !== 'ADMIN') {
       return {
         success: false,
         error: 'Unauthorized: Admin access required',

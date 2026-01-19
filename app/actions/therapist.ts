@@ -16,6 +16,7 @@ import mongoose from 'mongoose'
 /**
  * Server Action: Create a new therapist application
  * Validates input and creates therapist with PENDING status
+ * Requires authentication - userId is set from session
  */
 export async function createTherapist(
   input: unknown
@@ -23,6 +24,15 @@ export async function createTherapist(
   { success: true; therapistId: string } | { success: false; error: string }
 > {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user?.id) {
+      return {
+        success: false,
+        error: 'Unauthorized: You must be logged in to submit a therapist application',
+      }
+    }
+
     // Validate input
     const validated = createTherapistSchema.parse(input)
 
@@ -31,6 +41,7 @@ export async function createTherapist(
 
     // Create therapist with new schema fields
     const therapist = new Therapist({
+      userId: new mongoose.Types.ObjectId(session.user.id),
       status: 'PENDING',
       fullName: validated.fullName,
       email: validated.email,
@@ -90,7 +101,7 @@ export async function createTherapist(
 
 /**
  * Server Action: Update therapist status (admin only)
- * Validates admin session, updates therapist status, and logs to ReviewLog
+ * Validates admin session, updates therapist status, upgrades user role on approval, and logs to ReviewLog
  */
 export async function updateTherapistStatus(
   input: unknown
@@ -98,7 +109,7 @@ export async function updateTherapistStatus(
   try {
     // Check admin authentication
     const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'admin') {
+    if (!session || session.user.role !== 'ADMIN') {
       return {
         success: false,
         error: 'Unauthorized: Admin access required',
@@ -126,6 +137,18 @@ export async function updateTherapistStatus(
     // Update status
     therapist.status = validated.status
     await therapist.save()
+
+    // If approved, upgrade user role from BASIC to THERAPIST
+    if (validated.status === 'APPROVED') {
+      const User = (await import('@/models/User')).default
+      type UserFindOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<InstanceType<typeof User> | null>
+      const user = await (User.findOne as unknown as UserFindOne)({ _id: therapist.userId })
+      
+      if (user) {
+        user.role = 'THERAPIST'
+        await user.save()
+      }
+    }
 
     // Map status to ReviewLog decision
     let decision: 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED'

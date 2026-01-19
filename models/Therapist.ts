@@ -62,6 +62,7 @@ export interface ExternalLinks {
  * Therapist Document Interface
  */
 export interface TherapistDocument extends mongoose.Document {
+  userId: mongoose.Types.ObjectId
   status: TherapistStatus
   
   // A. Personal & Professional Details
@@ -104,6 +105,12 @@ export interface TherapistDocument extends mongoose.Document {
  */
 const TherapistSchema = new Schema<TherapistDocument>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
     status: {
       type: String,
       enum: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'],

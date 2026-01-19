@@ -77,3 +77,31 @@ export const updateStoryStatusSchema = z.object({
 })
 
 export type UpdateStoryStatusInput = z.infer<typeof updateStoryStatusSchema>
+
+/**
+ * Schema for updating a story (user edit)
+ * Users can edit their own stories
+ */
+export const updateStorySchema = z.object({
+  storyId: z.string().min(1),
+  
+  // A. Personal Details
+  submitterFullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
+  submitterPhone: z.string().min(1, 'מספר טלפון הוא שדה חובה'),
+  submitterEmail: z.string().email('כתובת אימייל לא תקינה'),
+  mayContact: z.boolean({
+    required_error: 'יש לבחור אם ניתן ליצור קשר להבהרות',
+  }),
+  publicationChoice: PublicationChoiceSchema,
+  
+  // B. Story Content
+  title: z.string().min(1, 'כותרת היא שדה חובה'),
+  problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
+  previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
+  solution: z.string().min(1, 'תיאור הפתרון הוא שדה חובה'),
+  results: z.string().min(1, 'תיאור התוצאות הוא שדה חובה'),
+  messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
+  freeTextStory: z.string().optional(),
+})
+
+export type UpdateStoryInput = z.infer<typeof updateStorySchema>

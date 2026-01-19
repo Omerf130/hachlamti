@@ -3,7 +3,7 @@ import mongoose, { Schema, model, models } from 'mongoose'
 /**
  * User Role Enum
  */
-export type UserRole = 'user' | 'admin'
+export type UserRole = 'BASIC' | 'THERAPIST' | 'ADMIN'
 
 /**
  * User Document Interface
@@ -35,9 +35,9 @@ const UserSchema = new Schema<UserDocument>(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['BASIC', 'THERAPIST', 'ADMIN'],
       required: true,
-      default: 'user',
+      default: 'BASIC',
       index: true,
     },
   },
