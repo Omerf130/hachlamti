@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Therapist from '@/models/Therapist'
 import { findMany } from '@/lib/mongoose-helpers'
+import SuccessMessage from './SuccessMessage'
 import styles from './page.module.scss'
 
 async function getTherapistApplications() {
@@ -14,11 +15,17 @@ async function getTherapistApplications() {
   return therapists
 }
 
-export default async function TherapistApplicationsPage() {
+interface PageProps {
+  searchParams: { success?: string }
+}
+
+export default async function TherapistApplicationsPage({ searchParams }: PageProps) {
   const applications = await getTherapistApplications()
 
   return (
     <div className={styles.container}>
+      <SuccessMessage success={searchParams.success} />
+
       <div className={styles.header}>
         <h1 className={styles.title}>בקשות מטפלים</h1>
         <p className={styles.subtitle}>

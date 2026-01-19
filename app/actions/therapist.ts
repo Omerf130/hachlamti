@@ -102,10 +102,12 @@ export async function createTherapist(
 
 /**
  * Server Action: Update therapist status (admin only)
- * Validates admin session, updates therapist status, upgrades user role on approval, and logs to ReviewLog
+ * Validates admin session, updates therapist status, upgrades user role on approval
+ * Hard deletes on rejection
  */
 export async function updateTherapistStatus(
-  input: unknown
+  therapistId: string,
+  status: 'APPROVED' | 'REJECTED'
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     // Check admin authentication
@@ -117,11 +119,11 @@ export async function updateTherapistStatus(
       }
     }
 
-    // Validate input
-    const validated = updateTherapistStatusSchema.parse(input)
+    // Connect to database
+    await connectDB()
 
     // Find therapist
-    const therapist = await findOne(Therapist, { _id: new mongoose.Types.ObjectId(validated.therapistId) })
+    const therapist = await findOne(Therapist, { _id: new mongoose.Types.ObjectId(therapistId) })
 
     if (!therapist) {
       return {
@@ -130,12 +132,39 @@ export async function updateTherapistStatus(
       }
     }
 
-    // Update status
-    therapist.status = validated.status
-    await therapist.save()
+    // Handle rejection - hard delete
+    if (status === 'REJECTED') {
+      type TherapistDeleteOne = (filter: { _id: mongoose.Types.ObjectId }) => Promise<any>
+      await (Therapist.deleteOne as unknown as TherapistDeleteOne)({ 
+        _id: new mongoose.Types.ObjectId(therapistId) 
+      })
 
-    // If approved, upgrade user role from BASIC to THERAPIST
-    if (validated.status === 'APPROVED') {
+      // Log rejection to ReviewLog before deletion
+      const reviewLog = new ReviewLog({
+        entityType: 'THERAPIST',
+        entityId: therapist._id.toString(),
+        adminUserId: session.user.id,
+        decision: 'REJECTED',
+        notes: 'Application rejected and deleted',
+      })
+      await reviewLog.save()
+
+      // Revalidate paths
+      revalidatePath('/admin/therapists')
+      revalidatePath('/therapists')
+
+      return {
+        success: true,
+      }
+    }
+
+    // Handle approval
+    if (status === 'APPROVED') {
+      // Update therapist status
+      therapist.status = 'APPROVED'
+      await therapist.save()
+
+      // Upgrade user role from BASIC to THERAPIST
       const User = (await import('@/models/User')).default
       const user = await findOne(User, { _id: therapist.userId })
       
@@ -143,47 +172,32 @@ export async function updateTherapistStatus(
         user.role = 'THERAPIST'
         await user.save()
       }
+
+      // Log approval
+      const reviewLog = new ReviewLog({
+        entityType: 'THERAPIST',
+        entityId: therapist._id.toString(),
+        adminUserId: session.user.id,
+        decision: 'APPROVED',
+        notes: 'Application approved',
+      })
+      await reviewLog.save()
+
+      // Revalidate paths
+      revalidatePath('/admin/therapists')
+      revalidatePath('/therapists')
+
+      return {
+        success: true,
+      }
     }
-
-    // Map status to ReviewLog decision
-    let decision: 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED'
-    if (validated.status === 'APPROVED') {
-      decision = 'APPROVED'
-    } else if (validated.status === 'REJECTED') {
-      decision = 'REJECTED'
-    } else {
-      decision = 'CHANGES_REQUESTED'
-    }
-
-    // Log to ReviewLog
-    const reviewLog = new ReviewLog({
-      entityType: 'THERAPIST',
-      entityId: therapist._id.toString(),
-      adminUserId: session.user.id,
-      decision,
-      notes: validated.notes,
-    })
-
-    await reviewLog.save()
-
-    // Revalidate relevant paths
-    revalidatePath('/admin/therapists')
-    revalidatePath('/therapists')
 
     return {
-      success: true,
+      success: false,
+      error: 'Invalid status',
     }
   } catch (error) {
     console.error('Update therapist status error:', error)
-    if (error instanceof ZodError) {
-      const firstError = error.errors[0]
-      return {
-        success: false,
-        error: firstError
-          ? `Validation failed: ${firstError.path.join('.')} - ${firstError.message}`
-          : 'Validation failed',
-      }
-    }
     if (error instanceof Error) {
       return {
         success: false,
