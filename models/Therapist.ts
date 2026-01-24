@@ -116,7 +116,6 @@ const TherapistSchema = new Schema<TherapistDocument>(
       enum: ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'],
       required: true,
       default: 'PENDING',
-      index: true,
     },
     
     // A. Personal & Professional Details
@@ -160,7 +159,6 @@ const TherapistSchema = new Schema<TherapistDocument>(
     geographicArea: {
       type: String,
       required: true,
-      index: true,
     },
     clinicAddress: {
       type: String,
@@ -175,7 +173,8 @@ const TherapistSchema = new Schema<TherapistDocument>(
     // C. Availability
     availability: {
       type: Schema.Types.Mixed,
-      required: true,
+      required: false,
+      default: {},
     },
     
     // D. External Links

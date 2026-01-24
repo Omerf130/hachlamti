@@ -53,7 +53,6 @@ type TherapistFormInput = z.infer<typeof therapistFormSchema>
 
 export default function TherapistApplicationForm(): JSX.Element {
   const [error, setError] = useState<string>('')
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
 
@@ -82,7 +81,6 @@ export default function TherapistApplicationForm(): JSX.Element {
 
   const onSubmit = async (data: TherapistFormInput): Promise<void> => {
     setError('')
-    setFieldErrors({})
     setLoading(true)
 
     try {
@@ -179,9 +177,6 @@ export default function TherapistApplicationForm(): JSX.Element {
         setSuccess(true)
       } else {
         setError(result.error)
-        if ('fieldErrors' in result && result.fieldErrors) {
-          setFieldErrors(result.fieldErrors)
-        }
       }
     } catch (err) {
       setError('שגיאה בשליחת הבקשה. אנא נסה שוב.')

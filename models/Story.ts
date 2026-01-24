@@ -65,7 +65,6 @@ const StorySchema = new Schema<StoryDocument>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     status: {
       type: String,
@@ -79,7 +78,6 @@ const StorySchema = new Schema<StoryDocument>(
       ],
       required: true,
       default: 'PUBLISHED',
-      index: true,
     },
     
     // A. Personal Details
@@ -118,7 +116,6 @@ const StorySchema = new Schema<StoryDocument>(
     problem: {
       type: String,
       required: true,
-      index: true,
     },
     previousAttempts: {
       type: String,
@@ -170,7 +167,6 @@ const StorySchema = new Schema<StoryDocument>(
       type: Date,
       required: true,
       default: Date.now,
-      index: true,
     },
     publishedAt: {
       type: Date,
