@@ -44,7 +44,6 @@ type StoryFormInput = z.infer<typeof storyFormSchema>
 
 export default function StorySubmissionForm(): JSX.Element {
   const [error, setError] = useState<string>('')
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
 
@@ -64,7 +63,6 @@ export default function StorySubmissionForm(): JSX.Element {
   const onSubmit = async (data: StoryFormInput): Promise<void> => {
     console.log('Form submitted with data:', data)
     setError('')
-    setFieldErrors({})
     setLoading(true)
 
     try {
@@ -79,9 +77,6 @@ export default function StorySubmissionForm(): JSX.Element {
         setSuccess(true)
       } else {
         setError(result.error)
-        if ('fieldErrors' in result && result.fieldErrors) {
-          setFieldErrors(result.fieldErrors)
-        }
       }
     } catch (err) {
       console.error('Story submission error:', err)
