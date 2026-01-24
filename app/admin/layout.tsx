@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import AdminLogoutButton from './AdminLogoutButton'
 import Therapist from '@/models/Therapist'
 import { connectDB } from '@/lib/db'
 import styles from './layout.module.scss'
@@ -42,7 +41,6 @@ export default async function AdminLayout({
           <h1 className={styles.title}>ניהול Hachlamti</h1>
           <div className={styles.user}>
             <span className={styles.email}>{session.user.email}</span>
-            <AdminLogoutButton />
           </div>
         </div>
       </header>
