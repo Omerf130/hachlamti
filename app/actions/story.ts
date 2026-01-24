@@ -138,7 +138,7 @@ export async function createStory(
 
 /**
  * Server Action: Update a story (user edit)
- * Users can edit only their own stories
+ * Users can edit only their own stories (admins can edit any story)
  */
 export async function updateStory(
   input: unknown
@@ -166,8 +166,11 @@ export async function updateStory(
       }
     }
 
-    // Check ownership
-    if (story.authorUserId.toString() !== session.user.id) {
+    // Check ownership (allow ADMIN to edit any story)
+    const isAdmin = session.user.role === 'ADMIN'
+    const isOwner = story.authorUserId.toString() === session.user.id
+
+    if (!isAdmin && !isOwner) {
       return {
         success: false,
         error: 'Unauthorized: You can only edit your own stories',
@@ -200,6 +203,7 @@ export async function updateStory(
     // Revalidate relevant paths
     revalidatePath('/stories')
     revalidatePath(`/stories/${validated.storyId}`)
+    revalidatePath('/admin/stories')
 
     return {
       success: true,
@@ -290,6 +294,65 @@ export async function deleteStory(
     }
   } catch (error) {
     console.error('Delete story error:', error)
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+    return {
+      success: false,
+      error: 'שגיאה בלתי צפויה אירעה',
+    }
+  }
+}
+
+/**
+ * Server Action: Delete a story (admin only - can delete any story)
+ * Validates admin session and performs hard delete
+ */
+export async function deleteStoryAdmin(
+  storyId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    // Check admin authentication
+    const session = await getServerSession(authOptions)
+    if (!session || session.user.role !== 'ADMIN') {
+      return {
+        success: false,
+        error: 'Unauthorized: Admin access required',
+      }
+    }
+
+    // Connect to database
+    await connectDB()
+
+    if (!storyId) {
+      return {
+        success: false,
+        error: 'Story ID is required',
+      }
+    }
+
+    // Hard delete the story
+    const deleted = await deleteById(Story, storyId)
+    
+    if (!deleted) {
+      return {
+        success: false,
+        error: 'Failed to delete story',
+      }
+    }
+
+    // Revalidate relevant paths
+    revalidatePath('/admin/stories')
+    revalidatePath('/stories')
+
+    return {
+      success: true,
+    }
+  } catch (error) {
+    console.error('Delete story (admin) error:', error)
     if (error instanceof Error) {
       return {
         success: false,

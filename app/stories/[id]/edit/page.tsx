@@ -29,8 +29,11 @@ export default async function EditStoryPage({ params }: PageProps) {
     redirect('/my-stories')
   }
 
-  // Check ownership
-  if (story.authorUserId.toString() !== session.user.id) {
+  // Check ownership (allow ADMIN to edit any story)
+  const isAdmin = session.user.role === 'ADMIN'
+  const isOwner = story.authorUserId.toString() === session.user.id
+
+  if (!isAdmin && !isOwner) {
     redirect('/my-stories')
   }
 
@@ -55,7 +58,9 @@ export default async function EditStoryPage({ params }: PageProps) {
     <main className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>עריכת סיפור</h1>
-        <p className={styles.subtitle}>עדכן את הסיפור שלך</p>
+        <p className={styles.subtitle}>
+          {isAdmin && !isOwner ? 'עריכת סיפור (מנהל)' : 'עדכן את הסיפור שלך'}
+        </p>
       </div>
       <StoryEditForm initialData={storyData} />
     </main>

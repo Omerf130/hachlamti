@@ -1,0 +1,126 @@
+.actionButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+
+  &.delete {
+    background: #fed7d7;
+    color: #c53030;
+
+    &:hover {
+      background: #fc8181;
+      color: white;
+    }
+  }
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 1rem 0;
+}
+
+.modalText {
+  color: #2d3748;
+  line-height: 1.6;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+
+  strong {
+    font-weight: 700;
+    color: #1a202c;
+  }
+}
+
+.modalWarning {
+  color: #c53030;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+  font-weight: 500;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.modalButton {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.delete {
+    background: #f56565;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #e53e3e;
+    }
+  }
+
+  &.cancel {
+    background: #edf2f7;
+    color: #4a5568;
+
+    &:hover:not(:disabled) {
+      background: #e2e8f0;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .modalActions {
+    flex-direction: column-reverse;
+  }
+
+  .modalButton {
+    width: 100%;
+  }
+}
+
