@@ -44,6 +44,7 @@ type StoryFormInput = z.infer<typeof storyFormSchema>
 
 export default function StorySubmissionForm(): JSX.Element {
   const [error, setError] = useState<string>('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
 
@@ -63,6 +64,7 @@ export default function StorySubmissionForm(): JSX.Element {
   const onSubmit = async (data: StoryFormInput): Promise<void> => {
     console.log('Form submitted with data:', data)
     setError('')
+    setFieldErrors({})
     setLoading(true)
 
     try {
@@ -77,6 +79,9 @@ export default function StorySubmissionForm(): JSX.Element {
         setSuccess(true)
       } else {
         setError(result.error)
+        if ('fieldErrors' in result && result.fieldErrors) {
+          setFieldErrors(result.fieldErrors)
+        }
       }
     } catch (err) {
       console.error('Story submission error:', err)
@@ -111,19 +116,20 @@ export default function StorySubmissionForm(): JSX.Element {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-          {error && <div className={styles.error}>⚠️ {error}</div>}
-          
-          {/* Debug: Show validation errors */}
-          {Object.keys(errors).length > 0 && (
+          {error && (
             <div className={styles.error}>
-              <strong>שגיאות אימות:</strong>
-              <ul style={{ margin: '0.5rem 0', paddingRight: '1.5rem' }}>
-                {Object.entries(errors).map(([field, error]) => (
-                  <li key={field}>
-                    {field}: {error?.message}
-                  </li>
-                ))}
-              </ul>
+              <strong>⚠️ שגיאה</strong>
+              <p style={{ whiteSpace: 'pre-line', margin: '0.5rem 0 0 0' }}>{error}</p>
+            </div>
+          )}
+          
+          {/* Show validation errors if present */}
+          {Object.keys(errors).length > 0 && !error && (
+            <div className={styles.error}>
+              <strong>⚠️ יש לתקן את השדות המסומנים באדום</strong>
+              <p style={{ marginTop: '0.5rem' }}>
+                אנא מלא את כל שדות החובה ובדוק שהמידע נכון.
+              </p>
             </div>
           )}
 

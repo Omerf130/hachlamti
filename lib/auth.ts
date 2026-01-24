@@ -31,8 +31,9 @@ export const authOptions: NextAuthOptions = {
               credentials.email === adminEmail &&
               credentials.password === adminPassword
             ) {
+              // Use a valid ObjectId format for admin (000000000000000000000000 is valid)
               return {
-                id: 'admin',
+                id: '000000000000000000000000',
                 email: adminEmail,
                 role: 'ADMIN',
               }

@@ -21,7 +21,7 @@ import { findOne } from '@/lib/mongoose-helpers'
 export async function createTherapist(
   input: unknown
 ): Promise<
-  { success: true; therapistId: string } | { success: false; error: string }
+  { success: true; therapistId: string } | { success: false; error: string; fieldErrors?: Record<string, string> }
 > {
   try {
     // Check authentication
@@ -29,7 +29,7 @@ export async function createTherapist(
     if (!session || !session.user?.id) {
       return {
         success: false,
-        error: 'Unauthorized: You must be logged in to submit a therapist application',
+        error: 'עליך להיות מחובר כדי לשלוח בקשה',
       }
     }
 
@@ -38,6 +38,15 @@ export async function createTherapist(
 
     // Connect to database
     await connectDB()
+
+    // Validate user ID format
+    if (!mongoose.Types.ObjectId.isValid(session.user.id)) {
+      console.error('Invalid user ID format:', session.user.id)
+      return {
+        success: false,
+        error: 'שגיאה במערכת. אנא נסה להתחבר מחדש.',
+      }
+    }
 
     // Create therapist with new schema fields
     const therapist = new Therapist({
@@ -78,15 +87,51 @@ export async function createTherapist(
   } catch (error) {
     console.error('Create therapist error:', error)
     if (error instanceof ZodError) {
-      const firstError = error.errors[0]
+      // Map Zod errors to user-friendly Hebrew messages
+      const fieldErrors: Record<string, string> = {}
+      const errorMessages: string[] = []
+      
+      error.errors.forEach((err) => {
+        const field = err.path.join('.')
+        const hebrewFieldNames: Record<string, string> = {
+          'fullName': 'שם מלא',
+          'email': 'אימייל',
+          'phoneWhatsApp': 'טלפון',
+          'treatmentSpecialties': 'התמחויות טיפוליות',
+          'yearsExperience': 'שנות ניסיון',
+          'professionalDescription': 'תיאור מקצועי',
+          'healthIssues': 'בעיות בריאות',
+          'languages': 'שפות',
+          'geographicArea': 'אזור גיאוגרפי',
+          'treatmentLocations': 'מקומות טיפול',
+          'declarationAccurate': 'אישור דיוק',
+          'declarationCertified': 'אישור הסמכה',
+          'declarationTerms': 'אישור תנאי שימוש',
+          'declarationConsent': 'אישור פרסום',
+          'declarationResponsibility': 'אישור אחריות',
+        }
+        
+        const hebrewField = hebrewFieldNames[field] || field
+        fieldErrors[field] = err.message
+        errorMessages.push(`${hebrewField}: ${err.message}`)
+      })
+      
       return {
         success: false,
-        error: firstError
-          ? `שגיאת אימות: ${firstError.path.join('.')} - ${firstError.message}`
-          : 'שגיאת אימות',
+        error: `אנא תקן את השדות הבאים:\n${errorMessages.join('\n')}`,
+        fieldErrors,
       }
     }
     if (error instanceof Error) {
+      // Filter out technical MongoDB errors
+      if (error.message.includes('24 character hex string') || 
+          error.message.includes('ObjectId') ||
+          error.message.includes('Uint8Array')) {
+        return {
+          success: false,
+          error: 'שגיאה במערכת. אנא נסה להתחבר מחדש או פנה לתמיכה.',
+        }
+      }
       return {
         success: false,
         error: error.message,
@@ -94,7 +139,7 @@ export async function createTherapist(
     }
     return {
       success: false,
-      error: 'שגיאה בלתי צפויה אירעה',
+      error: 'שגיאה בלתי צפויה אירעה. אנא נסה שוב.',
     }
   }
 }

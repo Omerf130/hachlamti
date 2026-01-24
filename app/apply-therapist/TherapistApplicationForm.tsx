@@ -53,6 +53,7 @@ type TherapistFormInput = z.infer<typeof therapistFormSchema>
 
 export default function TherapistApplicationForm(): JSX.Element {
   const [error, setError] = useState<string>('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
 
@@ -81,6 +82,7 @@ export default function TherapistApplicationForm(): JSX.Element {
 
   const onSubmit = async (data: TherapistFormInput): Promise<void> => {
     setError('')
+    setFieldErrors({})
     setLoading(true)
 
     try {
@@ -115,7 +117,7 @@ export default function TherapistApplicationForm(): JSX.Element {
         return
       }
       if (healthIssues.length === 0) {
-        setError('יש לבחור לפחות בעיה בריאותית אחת')
+        setError('יש להזין לפחות בעיה בריאותית אחת')
         setLoading(false)
         return
       }
@@ -177,6 +179,9 @@ export default function TherapistApplicationForm(): JSX.Element {
         setSuccess(true)
       } else {
         setError(result.error)
+        if ('fieldErrors' in result && result.fieldErrors) {
+          setFieldErrors(result.fieldErrors)
+        }
       }
     } catch (err) {
       setError('שגיאה בשליחת הבקשה. אנא נסה שוב.')
@@ -211,7 +216,22 @@ export default function TherapistApplicationForm(): JSX.Element {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-          {error && <div className={styles.error}>⚠️ {error}</div>}
+          {error && (
+            <div className={styles.error}>
+              <strong>⚠️ שגיאה</strong>
+              <p style={{ whiteSpace: 'pre-line', margin: '0.5rem 0 0 0' }}>{error}</p>
+            </div>
+          )}
+          
+          {/* Show validation errors if present */}
+          {Object.keys(errors).length > 0 && !error && (
+            <div className={styles.error}>
+              <strong>⚠️ יש לתקן את השדות המסומנים באדום</strong>
+              <p style={{ marginTop: '0.5rem' }}>
+                אנא מלא את כל שדות החובה ובדוק שהמידע נכון.
+              </p>
+            </div>
+          )}
 
       {/* A. Personal & Professional Details */}
       <section className={styles.section}>
