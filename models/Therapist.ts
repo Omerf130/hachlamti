@@ -67,7 +67,6 @@ export interface TherapistDocument extends mongoose.Document {
   
   // A. Personal & Professional Details
   fullName: string
-  email: string
   phoneWhatsApp: string
   treatmentSpecialties: string[] // free text/tags
   yearsExperience: number
@@ -120,10 +119,6 @@ const TherapistSchema = new Schema<TherapistDocument>(
     
     // A. Personal & Professional Details
     fullName: {
-      type: String,
-      required: true,
-    },
-    email: {
       type: String,
       required: true,
     },

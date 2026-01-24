@@ -26,7 +26,6 @@ export interface StoryDocument extends mongoose.Document {
   // A. Personal Details (For Contact Purposes Only)
   submitterFullName: string
   submitterPhone: string
-  submitterEmail: string
   submissionDate: Date
   mayContact: boolean
   publicationChoice: PublicationChoice
@@ -86,10 +85,6 @@ const StorySchema = new Schema<StoryDocument>(
       required: true,
     },
     submitterPhone: {
-      type: String,
-      required: true,
-    },
-    submitterEmail: {
       type: String,
       required: true,
     },

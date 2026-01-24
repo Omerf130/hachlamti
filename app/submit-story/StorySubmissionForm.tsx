@@ -12,7 +12,6 @@ const storyFormSchema = z.object({
   // A. Personal Details
   submitterFullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
   submitterPhone: z.string().min(1, 'מספר טלפון הוא שדה חובה'),
-  submitterEmail: z.string().email('כתובת אימייל לא תקינה'),
   mayContact: z.boolean(),
   publicationChoice: z.enum(['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS']),
   
@@ -158,20 +157,6 @@ export default function StorySubmissionForm(): JSX.Element {
           />
           {errors.submitterPhone && (
             <span className={styles.fieldError}>{errors.submitterPhone.message}</span>
-          )}
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="submitterEmail">אימייל *</label>
-          <input
-            id="submitterEmail"
-            type="email"
-            {...register('submitterEmail')}
-            placeholder="הכנס כתובת אימייל"
-            disabled={loading}
-          />
-          {errors.submitterEmail && (
-            <span className={styles.fieldError}>{errors.submitterEmail.message}</span>
           )}
         </div>
 

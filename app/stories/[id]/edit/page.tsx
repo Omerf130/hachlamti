@@ -42,7 +42,6 @@ export default async function EditStoryPage({ params }: PageProps) {
     _id: story._id.toString(),
     submitterFullName: story.submitterFullName,
     submitterPhone: story.submitterPhone,
-    submitterEmail: story.submitterEmail,
     mayContact: story.mayContact,
     publicationChoice: story.publicationChoice,
     title: story.title,

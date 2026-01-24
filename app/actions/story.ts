@@ -92,7 +92,6 @@ export async function createStory(
       
       submitterFullName: validated.submitterFullName,
       submitterPhone: validated.submitterPhone,
-      submitterEmail: validated.submitterEmail,
       submissionDate: validated.submissionDate,
       mayContact: validated.mayContact,
       publicationChoice: validated.publicationChoice,
@@ -133,7 +132,6 @@ export async function createStory(
         const hebrewFieldNames: Record<string, string> = {
           'submitterFullName': 'שם מלא',
           'submitterPhone': 'מספר טלפון',
-          'submitterEmail': 'אימייל',
           'title': 'כותרת',
           'problem': 'תיאור הבעיה',
           'previousAttempts': 'ניסיונות קודמים',
@@ -223,7 +221,6 @@ export async function updateStory(
     // Update story fields
     story.submitterFullName = validated.submitterFullName
     story.submitterPhone = validated.submitterPhone
-    story.submitterEmail = validated.submitterEmail
     story.mayContact = validated.mayContact
     story.publicationChoice = validated.publicationChoice
     

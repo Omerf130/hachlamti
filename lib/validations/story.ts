@@ -33,7 +33,6 @@ export const createStorySchema = z.object({
   // A. Personal Details (For Contact Purposes Only)
   submitterFullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
   submitterPhone: z.string().min(1, 'מספר טלפון הוא שדה חובה'),
-  submitterEmail: z.string().email('כתובת אימייל לא תקינה'),
   submissionDate: z.date().default(() => new Date()),
   mayContact: z.boolean({
     required_error: 'יש לבחור אם ניתן ליצור קשר להבהרות',
@@ -88,7 +87,6 @@ export const updateStorySchema = z.object({
   // A. Personal Details
   submitterFullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
   submitterPhone: z.string().min(1, 'מספר טלפון הוא שדה חובה'),
-  submitterEmail: z.string().email('כתובת אימייל לא תקינה'),
   mayContact: z.boolean({
     required_error: 'יש לבחור אם ניתן ליצור קשר להבהרות',
   }),

@@ -12,7 +12,6 @@ import styles from './page.module.scss'
 const editStoryFormSchema = z.object({
   submitterFullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
   submitterPhone: z.string().min(1, 'מספר טלפון הוא שדה חובה'),
-  submitterEmail: z.string().email('כתובת אימייל לא תקינה'),
   mayContact: z.boolean(),
   publicationChoice: z.enum(['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS']),
   
@@ -32,7 +31,6 @@ interface StoryEditFormProps {
     _id: string
     submitterFullName: string
     submitterPhone: string
-    submitterEmail: string
     mayContact: boolean
     publicationChoice: 'FULL_NAME' | 'FIRST_NAME_ONLY' | 'ANONYMOUS'
     title: string
@@ -60,7 +58,6 @@ export default function StoryEditForm({ initialData }: StoryEditFormProps) {
     defaultValues: {
       submitterFullName: initialData.submitterFullName,
       submitterPhone: initialData.submitterPhone,
-      submitterEmail: initialData.submitterEmail,
       mayContact: initialData.mayContact,
       publicationChoice: initialData.publicationChoice,
       title: initialData.title,
@@ -112,14 +109,6 @@ export default function StoryEditForm({ initialData }: StoryEditFormProps) {
           <input type="tel" {...register('submitterPhone')} disabled={loading} />
           {errors.submitterPhone && (
             <span className={styles.fieldError}>{errors.submitterPhone.message}</span>
-          )}
-        </div>
-
-        <div className={styles.field}>
-          <label>אימייל *</label>
-          <input type="email" {...register('submitterEmail')} disabled={loading} />
-          {errors.submitterEmail && (
-            <span className={styles.fieldError}>{errors.submitterEmail.message}</span>
           )}
         </div>
 

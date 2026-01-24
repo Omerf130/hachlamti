@@ -10,7 +10,6 @@ import styles from './page.module.scss'
 // Simplified form schema for client-side (will be validated on server)
 const therapistFormSchema = z.object({
   fullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
-  email: z.string().email('כתובת אימייל לא תקינה'),
   phoneWhatsApp: z.string().min(1, 'מספר טלפון (ווטסאפ) הוא שדה חובה'),
   treatmentSpecialties: z.string().min(1, 'יש להזין לפחות תחום התמחות אחד'),
   yearsExperience: z.number({ invalid_type_error: 'יש להזין מספר' }).int().min(0),
@@ -142,7 +141,6 @@ export default function TherapistApplicationForm(): JSX.Element {
       // Prepare submit data
       const submitData = {
         fullName: data.fullName,
-        email: data.email,
         phoneWhatsApp: data.phoneWhatsApp,
         treatmentSpecialties,
         yearsExperience: data.yearsExperience,
@@ -243,20 +241,6 @@ export default function TherapistApplicationForm(): JSX.Element {
           />
           {errors.fullName && (
             <span className={styles.fieldError}>{errors.fullName.message}</span>
-          )}
-        </div>
-
-        <div className={styles.field}>
-          <label htmlFor="email">אימייל *</label>
-          <input
-            id="email"
-            type="email"
-            {...register('email')}
-            placeholder="הכנס כתובת אימייל"
-            disabled={loading}
-          />
-          {errors.email && (
-            <span className={styles.fieldError}>{errors.email.message}</span>
           )}
         </div>
 

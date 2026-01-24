@@ -53,7 +53,6 @@ export async function createTherapist(
       userId: new mongoose.Types.ObjectId(session.user.id),
       status: 'PENDING',
       fullName: validated.fullName,
-      email: validated.email,
       phoneWhatsApp: validated.phoneWhatsApp,
       treatmentSpecialties: validated.treatmentSpecialties,
       yearsExperience: validated.yearsExperience,
@@ -95,7 +94,6 @@ export async function createTherapist(
         const field = err.path.join('.')
         const hebrewFieldNames: Record<string, string> = {
           'fullName': 'שם מלא',
-          'email': 'אימייל',
           'phoneWhatsApp': 'טלפון',
           'treatmentSpecialties': 'התמחויות טיפוליות',
           'yearsExperience': 'שנות ניסיון',

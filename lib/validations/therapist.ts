@@ -67,7 +67,6 @@ export const ExternalLinksSchema = z.object({
 export const createTherapistSchema = z.object({
   // A. Personal & Professional Details
   fullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
-  email: z.string().email('כתובת אימייל לא תקינה'),
   phoneWhatsApp: z.string().min(1, 'מספר טלפון (ווטסאפ) הוא שדה חובה'),
   treatmentSpecialties: z.array(z.string()).min(1, 'יש להזין לפחות תחום התמחות אחד'),
   yearsExperience: z.number().int().min(0, 'שנות ניסיון חייבות להיות מספר חיובי'),
