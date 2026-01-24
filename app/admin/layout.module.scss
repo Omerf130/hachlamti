@@ -92,6 +92,9 @@
   border-bottom: 3px solid transparent;
   transition: all 0.2s;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 
   &:hover {
     color: #667eea;
@@ -101,6 +104,31 @@
   &:global(.active) {
     color: #667eea;
     border-bottom-color: #667eea;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
   }
 }
 

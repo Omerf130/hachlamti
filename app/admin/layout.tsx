@@ -3,7 +3,20 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLogoutButton from './AdminLogoutButton'
+import Therapist from '@/models/Therapist'
+import { connectDB } from '@/lib/db'
 import styles from './layout.module.scss'
+
+async function getPendingCount() {
+  try {
+    await connectDB()
+    const count = await Therapist.countDocuments({ status: 'PENDING' })
+    return count
+  } catch (error) {
+    console.error('Error fetching pending count:', error)
+    return 0
+  }
+}
 
 export default async function AdminLayout({
   children,
@@ -16,6 +29,8 @@ export default async function AdminLayout({
   if (!session || session.user.role !== 'ADMIN') {
     redirect('/login?callbackUrl=/admin')
   }
+
+  const pendingCount = await getPendingCount()
 
   return (
     <div className={styles.adminContainer}>
@@ -38,6 +53,9 @@ export default async function AdminLayout({
         </Link>
         <Link href="/admin/therapists" className={styles.navLink}>
           בקשות מטפלים
+          {pendingCount > 0 && (
+            <span className={styles.badge}>{pendingCount}</span>
+          )}
         </Link>
         <Link href="/admin/stories" className={styles.navLink}>
           ניהול סיפורים
