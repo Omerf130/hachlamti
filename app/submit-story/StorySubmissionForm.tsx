@@ -459,9 +459,40 @@ export default function StorySubmissionForm(): JSX.Element {
               )}
             </div>
           </section>
+         
 
-          {/* A3. Alternative Treatment */}
+          {/* B. Story Content */}
           <section className={styles.section}>
+            <h2>תהליך ההחלמה</h2>
+
+            <div className={styles.field}>
+              <label htmlFor="title">כותרת *</label>
+              <input
+                id="title"
+                type="text"
+                {...register('title')}
+                placeholder='לדוגמה: "איך החלמתי מ..."'
+                disabled={loading}
+              />
+              {errors.title && (
+                <span className={styles.fieldError}>{errors.title.message}</span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="problem">הבעיה: מהו המצב הרפואי? *</label>
+              <textarea
+                id="problem"
+                {...register('problem')}
+                rows={5}
+                placeholder="תאר את הבעיה או המצב הרפואי שהיה לך"
+                disabled={loading}
+              />
+              {errors.problem && (
+                <span className={styles.fieldError}>{errors.problem.message}</span>
+              )}
+            </div>
+            <section className={styles.section}>
             <h2>איזה שיטת טיפול אלטרנטיבית עיקרית עזרה לך?</h2>
 
             <div className={styles.field}>
@@ -536,38 +567,6 @@ export default function StorySubmissionForm(): JSX.Element {
               </div>
             )}
           </section>
-
-          {/* B. Story Content */}
-          <section className={styles.section}>
-            <h2>תהליך ההחלמה</h2>
-
-            <div className={styles.field}>
-              <label htmlFor="title">כותרת *</label>
-              <input
-                id="title"
-                type="text"
-                {...register('title')}
-                placeholder='לדוגמה: "איך החלמתי מ..."'
-                disabled={loading}
-              />
-              {errors.title && (
-                <span className={styles.fieldError}>{errors.title.message}</span>
-              )}
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="problem">הבעיה: מהו המצב הרפואי? *</label>
-              <textarea
-                id="problem"
-                {...register('problem')}
-                rows={5}
-                placeholder="תאר את הבעיה או המצב הרפואי שהיה לך"
-                disabled={loading}
-              />
-              {errors.problem && (
-                <span className={styles.fieldError}>{errors.problem.message}</span>
-              )}
-            </div>
 
             <div className={styles.field}>
               <label htmlFor="previousAttempts">ניסיונות קודמים: מה ניסית לפני? *</label>
