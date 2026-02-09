@@ -103,6 +103,9 @@ export async function createStory(
       title: validated.title,
       problem: validated.problem,
       previousAttempts: validated.previousAttempts,
+      timeToInitialImprovement: validated.timeToInitialImprovement,
+      currentHealthStatus: validated.currentHealthStatus,
+      mostImportantTip: validated.mostImportantTip,
       messageToOthers: validated.messageToOthers,
       
       declarationTruthful: validated.declarationTruthful,
@@ -146,6 +149,9 @@ export async function createStory(
           'title': 'כותרת',
           'problem': 'תיאור הבעיה',
           'previousAttempts': 'ניסיונות קודמים',
+          'timeToInitialImprovement': 'זמן לשינוי ראשוני',
+          'currentHealthStatus': 'מצב בריאותי נוכחי',
+          'mostImportantTip': 'טיפ חשוב',
           'messageToOthers': 'הודעה לאחרים',
           'declarationTruthful': 'אישור אמיתות',
           'declarationConsent': 'אישור פרסום',
@@ -240,6 +246,9 @@ export async function updateStory(
     story.title = validated.title
     story.problem = validated.problem
     story.previousAttempts = validated.previousAttempts
+    story.timeToInitialImprovement = validated.timeToInitialImprovement
+    story.currentHealthStatus = validated.currentHealthStatus
+    story.mostImportantTip = validated.mostImportantTip
     story.messageToOthers = validated.messageToOthers
 
     // Recompute displayName

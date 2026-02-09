@@ -64,6 +64,11 @@ const storyFormSchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
+  timeToInitialImprovement: z.string().min(1, 'יש למלא תוך כמה זמן הרגשת בשינוי'),
+  currentHealthStatus: z.enum(['החלמה מלאה', 'שיפור משמעותי', 'שליטה בסימפטומים'], {
+    errorMap: () => ({ message: 'יש לבחור מצב בריאותי נוכחי' }),
+  }),
+  mostImportantTip: z.string().min(1, 'יש למלא את הטיפ החשוב ביותר'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
 
   // C. Declarations - must be true
@@ -583,7 +588,77 @@ export default function StorySubmissionForm(): JSX.Element {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="messageToOthers">מסר לאחרים: מה היית אומר למישהו שעובר את זה כרגע? *</label>
+              <label htmlFor="timeToInitialImprovement">תוך כמה זמן הרגשת בשינוי ראשוני *</label>
+              <input
+                id="timeToInitialImprovement"
+                type="text"
+                {...register('timeToInitialImprovement')}
+                placeholder='לדוגמה: "שבועיים" או "חודש"'
+                disabled={loading}
+              />
+              {errors.timeToInitialImprovement && (
+                <span className={styles.fieldError}>{errors.timeToInitialImprovement.message}</span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label>מה מצבך הבריאותי היום? *</label>
+              <Controller
+                name="currentHealthStatus"
+                control={control}
+                render={({ field }) => (
+                  <div className={styles.checkboxGroup}>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="radio"
+                        checked={field.value === 'החלמה מלאה'}
+                        onChange={() => field.onChange('החלמה מלאה')}
+                        disabled={loading}
+                      />
+                      <span>החלמה מלאה</span>
+                    </label>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="radio"
+                        checked={field.value === 'שיפור משמעותי'}
+                        onChange={() => field.onChange('שיפור משמעותי')}
+                        disabled={loading}
+                      />
+                      <span>שיפור משמעותי</span>
+                    </label>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="radio"
+                        checked={field.value === 'שליטה בסימפטומים'}
+                        onChange={() => field.onChange('שליטה בסימפטומים')}
+                        disabled={loading}
+                      />
+                      <span>שליטה בסימפטומים</span>
+                    </label>
+                  </div>
+                )}
+              />
+              {errors.currentHealthStatus && (
+                <span className={styles.fieldError}>{errors.currentHealthStatus.message}</span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="mostImportantTip">מה הטיפ הכי חשוב שיש לך למי שסובל מאותה בעיה (מסר של תקווה) *</label>
+              <textarea
+                id="mostImportantTip"
+                {...register('mostImportantTip')}
+                rows={4}
+                placeholder="שתף טיפ חשוב או מסר תקווה"
+                disabled={loading}
+              />
+              {errors.mostImportantTip && (
+                <span className={styles.fieldError}>{errors.mostImportantTip.message}</span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="messageToOthers">מה המסר העיקרי שלך למי שנמצא כרגע בשיא המחלה ומרגיש "חסר אונים"? *</label>
               <textarea
                 id="messageToOthers"
                 {...register('messageToOthers')}

@@ -63,6 +63,9 @@ export interface StoryDocument extends mongoose.Document {
   title: string
   problem: string // The medical condition
   previousAttempts: string // What was tried before
+  timeToInitialImprovement: string // How long until first improvement
+  currentHealthStatus: string // Current health status (full recovery, significant improvement, symptom control)
+  mostImportantTip: string // Most important tip for others
   messageToOthers: string // Message to someone going through this
   
   // C. Declarations (boolean flags - all must be true to submit)
@@ -200,6 +203,19 @@ const StorySchema = new Schema<StoryDocument>(
       required: true,
     },
     previousAttempts: {
+      type: String,
+      required: true,
+    },
+    timeToInitialImprovement: {
+      type: String,
+      required: true,
+    },
+    currentHealthStatus: {
+      type: String,
+      required: true,
+      enum: ['החלמה מלאה', 'שיפור משמעותי', 'שליטה בסימפטומים'],
+    },
+    mostImportantTip: {
       type: String,
       required: true,
     },

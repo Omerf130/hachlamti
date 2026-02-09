@@ -174,6 +174,11 @@ export const createStorySchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
+  timeToInitialImprovement: z.string().min(1, 'יש למלא תוך כמה זמן הרגשת בשינוי'),
+  currentHealthStatus: z.enum(['החלמה מלאה', 'שיפור משמעותי', 'שליטה בסימפטומים'], {
+    errorMap: () => ({ message: 'יש לבחור מצב בריאותי נוכחי' }),
+  }),
+  mostImportantTip: z.string().min(1, 'יש למלא את הטיפ החשוב ביותר'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
   
   // C. Declarations (all must be true)
@@ -231,6 +236,11 @@ export const updateStorySchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
+  timeToInitialImprovement: z.string().min(1, 'יש למלא תוך כמה זמן הרגשת בשינוי'),
+  currentHealthStatus: z.enum(['החלמה מלאה', 'שיפור משמעותי', 'שליטה בסימפטומים'], {
+    errorMap: () => ({ message: 'יש לבחור מצב בריאותי נוכחי' }),
+  }),
+  mostImportantTip: z.string().min(1, 'יש למלא את הטיפ החשוב ביותר'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
 })
 
