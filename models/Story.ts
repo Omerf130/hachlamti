@@ -29,6 +29,16 @@ export interface HealthChallenge {
 }
 
 /**
+ * Alternative Treatment
+ */
+export interface AlternativeTreatment {
+  primary: string
+  primaryOtherText?: string
+  sub: string
+  subOtherText?: string
+}
+
+/**
  * Story Document Interface
  */
 export interface StoryDocument extends mongoose.Document {
@@ -45,6 +55,9 @@ export interface StoryDocument extends mongoose.Document {
   
   // A2. Health Challenge
   healthChallenge: HealthChallenge
+  
+  // A3. Alternative Treatment
+  alternativeTreatment: AlternativeTreatment
   
   // B. Story Content
   title: string
@@ -147,6 +160,30 @@ const StorySchema = new Schema<StoryDocument>(
         impactOnQualityOfLife: {
           type: String,
           required: true,
+        },
+      },
+      required: true,
+      _id: false,
+    },
+    
+    // A3. Alternative Treatment
+    alternativeTreatment: {
+      type: {
+        primary: {
+          type: String,
+          required: true,
+        },
+        primaryOtherText: {
+          type: String,
+          required: false,
+        },
+        sub: {
+          type: String,
+          required: true,
+        },
+        subOtherText: {
+          type: String,
+          required: false,
         },
       },
       required: true,

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { PRIMARY_OPTIONS, isValidSubCategory } from '../healthOptions'
+import { ALT_TREATMENT_PRIMARY_OPTIONS, isValidAltTreatmentSubCategory } from '../alternativeTreatmentOptions'
 
 /**
  * Story Status Enum
@@ -89,6 +90,66 @@ export const HealthChallengeSchema = z.object({
 export type HealthChallenge = z.infer<typeof HealthChallengeSchema>
 
 /**
+ * Alternative Treatment Schema with validation
+ */
+export const AlternativeTreatmentSchema = z.object({
+  primary: z.string().min(1, 'יש לבחור שיטת טיפול'),
+  primaryOtherText: z.string().optional(),
+  sub: z.string().min(1, 'יש לבחור תת קטגוריה'),
+  subOtherText: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Validate primary is in ALT_TREATMENT_PRIMARY_OPTIONS
+  if (!ALT_TREATMENT_PRIMARY_OPTIONS.includes(data.primary)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'שיטת הטיפול לא תקינה',
+      path: ['primary'],
+    })
+  }
+  
+  // If primary is "אחר", primaryOtherText must be provided
+  if (data.primary === 'אחר') {
+    if (!data.primaryOtherText || data.primaryOtherText.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'יש להזין את שיטת הטיפול',
+        path: ['primaryOtherText'],
+      })
+    }
+    // When primary is "אחר", sub must also be "אחר"
+    if (data.sub !== 'אחר') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'כאשר שיטת הטיפול היא אחר, תת הקטגוריה חייבת להיות אחר',
+        path: ['sub'],
+      })
+    }
+  }
+  
+  // If sub is "אחר", subOtherText must be provided
+  if (data.sub === 'אחר') {
+    if (!data.subOtherText || data.subOtherText.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'יש להזין את תת הקטגוריה',
+        path: ['subOtherText'],
+      })
+    }
+  }
+  
+  // Validate sub belongs to primary (unless primary is "אחר")
+  if (data.primary !== 'אחר' && !isValidAltTreatmentSubCategory(data.primary, data.sub)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'תת הקטגוריה לא תואמת את שיטת הטיפול',
+      path: ['sub'],
+    })
+  }
+})
+
+export type AlternativeTreatment = z.infer<typeof AlternativeTreatmentSchema>
+
+/**
  * Schema for creating a new recovery story
  * Used in createStory Server Action
  */
@@ -105,6 +166,9 @@ export const createStorySchema = z.object({
   
   // A2. Health Challenge
   healthChallenge: HealthChallengeSchema,
+  
+  // A3. Alternative Treatment
+  alternativeTreatment: AlternativeTreatmentSchema,
   
   // B. Story Content
   title: z.string().min(1, 'כותרת היא שדה חובה'),
@@ -159,6 +223,9 @@ export const updateStorySchema = z.object({
   
   // A2. Health Challenge
   healthChallenge: HealthChallengeSchema,
+  
+  // A3. Alternative Treatment
+  alternativeTreatment: AlternativeTreatmentSchema,
   
   // B. Story Content
   title: z.string().min(1, 'כותרת היא שדה חובה'),

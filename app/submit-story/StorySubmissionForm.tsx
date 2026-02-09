@@ -7,6 +7,7 @@ import { createStory } from '@/app/actions/story'
 import { useState, useEffect } from 'react'
 import styles from './page.module.scss'
 import { PRIMARY_OPTIONS, getSubOptions } from '@/lib/healthOptions'
+import { ALT_TREATMENT_PRIMARY_OPTIONS, getAltTreatmentSubOptions } from '@/lib/alternativeTreatmentOptions'
 
 // Simplified form schema for client-side
 const storyFormSchema = z.object({
@@ -25,6 +26,26 @@ const storyFormSchema = z.object({
     subOtherText: z.string().optional(),
     durationBeforeRecovery: z.string().min(1, 'יש למלא כמה זמן סבלת מהבעיה'),
     impactOnQualityOfLife: z.string().min(1, 'יש למלא כיצד המחלה השפיעה על איכות החיים'),
+  }).refine((data) => {
+    // If primary is "אחר", primaryOtherText is required
+    if (data.primary === 'אחר' && (!data.primaryOtherText || data.primaryOtherText.trim() === '')) {
+      return false
+    }
+    // If sub is "אחר", subOtherText is required
+    if (data.sub === 'אחר' && (!data.subOtherText || data.subOtherText.trim() === '')) {
+      return false
+    }
+    return true
+  }, {
+    message: 'יש למלא את כל השדות הנדרשים',
+  }),
+
+  // A3. Alternative Treatment
+  alternativeTreatment: z.object({
+    primary: z.string().min(1, 'יש לבחור שיטת טיפול'),
+    primaryOtherText: z.string().optional(),
+    sub: z.string().min(1, 'יש לבחור תת קטגוריה'),
+    subOtherText: z.string().optional(),
   }).refine((data) => {
     // If primary is "אחר", primaryOtherText is required
     if (data.primary === 'אחר' && (!data.primaryOtherText || data.primaryOtherText.trim() === '')) {
@@ -67,6 +88,7 @@ export default function StorySubmissionForm(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
   const [subOptions, setSubOptions] = useState<string[]>(['אחר'])
+  const [altTreatmentSubOptions, setAltTreatmentSubOptions] = useState<string[]>(['אחר'])
 
   const {
     register,
@@ -89,14 +111,24 @@ export default function StorySubmissionForm(): JSX.Element {
         durationBeforeRecovery: '',
         impactOnQualityOfLife: '',
       },
+      alternativeTreatment: {
+        primary: '',
+        primaryOtherText: '',
+        sub: '',
+        subOtherText: '',
+      },
     },
   })
 
-  // Watch primary selection for cascading dropdown
+  // Watch primary selection for cascading dropdown (Health Challenge)
   const watchPrimary = watch('healthChallenge.primary')
   const watchSub = watch('healthChallenge.sub')
 
-  // Update sub options when primary changes
+  // Watch primary selection for cascading dropdown (Alternative Treatment)
+  const watchAltTreatmentPrimary = watch('alternativeTreatment.primary')
+  const watchAltTreatmentSub = watch('alternativeTreatment.sub')
+
+  // Update sub options when primary changes (Health Challenge)
   useEffect(() => {
     if (watchPrimary) {
       const newSubOptions = getSubOptions(watchPrimary)
@@ -114,6 +146,25 @@ export default function StorySubmissionForm(): JSX.Element {
       setSubOptions(['אחר'])
     }
   }, [watchPrimary, setValue])
+
+  // Update sub options when primary changes (Alternative Treatment)
+  useEffect(() => {
+    if (watchAltTreatmentPrimary) {
+      const newSubOptions = getAltTreatmentSubOptions(watchAltTreatmentPrimary)
+      setAltTreatmentSubOptions(newSubOptions)
+      
+      // Reset sub when primary changes
+      setValue('alternativeTreatment.sub', '')
+      setValue('alternativeTreatment.subOtherText', '')
+      
+      // If primary is "אחר", automatically set sub to "אחר"
+      if (watchAltTreatmentPrimary === 'אחר') {
+        setValue('alternativeTreatment.sub', 'אחר')
+      }
+    } else {
+      setAltTreatmentSubOptions(['אחר'])
+    }
+  }, [watchAltTreatmentPrimary, setValue])
 
   const onSubmit = async (data: StoryFormInput): Promise<void> => {
     console.log('Form submitted with data:', data)
@@ -407,6 +458,83 @@ export default function StorySubmissionForm(): JSX.Element {
                 <span className={styles.fieldError}>{errors.healthChallenge.impactOnQualityOfLife.message}</span>
               )}
             </div>
+          </section>
+
+          {/* A3. Alternative Treatment */}
+          <section className={styles.section}>
+            <h2>איזה שיטת טיפול אלטרנטיבית עיקרית עזרה לך?</h2>
+
+            <div className={styles.field}>
+              <label htmlFor="alternativeTreatment.primary">קטגוריית טיפול *</label>
+              <select
+                id="alternativeTreatment.primary"
+                {...register('alternativeTreatment.primary')}
+                disabled={loading}
+              >
+                <option value="">בחר קטגוריה</option>
+                {ALT_TREATMENT_PRIMARY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {errors.alternativeTreatment?.primary && (
+                <span className={styles.fieldError}>{errors.alternativeTreatment.primary.message}</span>
+              )}
+            </div>
+
+            {/* Show primaryOtherText input if primary is "אחר" */}
+            {watchAltTreatmentPrimary === 'אחר' && (
+              <div className={styles.field}>
+                <label htmlFor="alternativeTreatment.primaryOtherText">פרט את שיטת הטיפול *</label>
+                <input
+                  id="alternativeTreatment.primaryOtherText"
+                  type="text"
+                  {...register('alternativeTreatment.primaryOtherText')}
+                  placeholder="הכנס את שיטת הטיפול"
+                  disabled={loading}
+                />
+                {errors.alternativeTreatment?.primaryOtherText && (
+                  <span className={styles.fieldError}>{errors.alternativeTreatment.primaryOtherText.message}</span>
+                )}
+              </div>
+            )}
+
+            <div className={styles.field}>
+              <label htmlFor="alternativeTreatment.sub">תת קטגוריה *</label>
+              <select
+                id="alternativeTreatment.sub"
+                {...register('alternativeTreatment.sub')}
+                disabled={loading || !watchAltTreatmentPrimary}
+              >
+                <option value="">בחר תת קטגוריה</option>
+                {altTreatmentSubOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {errors.alternativeTreatment?.sub && (
+                <span className={styles.fieldError}>{errors.alternativeTreatment.sub.message}</span>
+              )}
+            </div>
+
+            {/* Show subOtherText input if sub is "אחר" */}
+            {watchAltTreatmentSub === 'אחר' && (
+              <div className={styles.field}>
+                <label htmlFor="alternativeTreatment.subOtherText">פרט את תת הקטגוריה *</label>
+                <input
+                  id="alternativeTreatment.subOtherText"
+                  type="text"
+                  {...register('alternativeTreatment.subOtherText')}
+                  placeholder="הכנס את תת הקטגוריה"
+                  disabled={loading}
+                />
+                {errors.alternativeTreatment?.subOtherText && (
+                  <span className={styles.fieldError}>{errors.alternativeTreatment.subOtherText.message}</span>
+                )}
+              </div>
+            )}
           </section>
 
           {/* B. Story Content */}

@@ -98,6 +98,7 @@ export async function createStory(
       publicationChoice: validated.publicationChoice,
       
       healthChallenge: validated.healthChallenge,
+      alternativeTreatment: validated.alternativeTreatment,
       
       title: validated.title,
       problem: validated.problem,
@@ -138,6 +139,10 @@ export async function createStory(
           'healthChallenge.subOtherText': 'תיאור תת קטגוריה',
           'healthChallenge.durationBeforeRecovery': 'משך הסבל מהבעיה',
           'healthChallenge.impactOnQualityOfLife': 'השפעה על איכות החיים',
+          'alternativeTreatment.primary': 'שיטת טיפול',
+          'alternativeTreatment.primaryOtherText': 'תיאור שיטת טיפול',
+          'alternativeTreatment.sub': 'תת קטגוריה של שיטת טיפול',
+          'alternativeTreatment.subOtherText': 'תיאור תת קטגוריה של שיטת טיפול',
           'title': 'כותרת',
           'problem': 'תיאור הבעיה',
           'previousAttempts': 'ניסיונות קודמים',
@@ -230,6 +235,7 @@ export async function updateStory(
     story.publicationChoice = validated.publicationChoice
     
     story.healthChallenge = validated.healthChallenge
+    story.alternativeTreatment = validated.alternativeTreatment
     
     story.title = validated.title
     story.problem = validated.problem
