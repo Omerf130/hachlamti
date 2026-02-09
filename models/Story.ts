@@ -28,6 +28,7 @@ export interface StoryDocument extends mongoose.Document {
   submitterPhone: string
   submissionDate: Date
   mayContact: boolean
+  allowWhatsAppContact: boolean
   publicationChoice: PublicationChoice
   
   // B. Story Content
@@ -96,6 +97,11 @@ const StorySchema = new Schema<StoryDocument>(
     mayContact: {
       type: Boolean,
       required: true,
+    },
+    allowWhatsAppContact: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
     publicationChoice: {
       type: String,
