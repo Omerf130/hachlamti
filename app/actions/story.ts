@@ -3,6 +3,7 @@
 import { connectDB } from '@/lib/db'
 import { createStorySchema, updateStorySchema, updateStoryStatusSchema } from '@/lib/validations/story'
 import Story from '@/models/Story'
+import Therapist from '@/models/Therapist'
 import ReviewLog from '@/models/ReviewLog'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
@@ -10,7 +11,7 @@ import { revalidatePath } from 'next/cache'
 import type { PublicationChoice } from '@/lib/validations/story'
 import { ZodError } from 'zod'
 import mongoose from 'mongoose'
-import { findOne, deleteById } from '@/lib/mongoose-helpers'
+import { findOne, deleteById, findMany } from '@/lib/mongoose-helpers'
 
 /**
  * Computes displayName based on publicationChoice and submitterFullName
@@ -96,6 +97,8 @@ export async function createStory(
       mayContact: validated.mayContact,
       allowWhatsAppContact: validated.allowWhatsAppContact,
       publicationChoice: validated.publicationChoice,
+      therapistName: validated.therapistName,
+      therapistNameOther: validated.therapistNameOther,
       
       healthChallenge: validated.healthChallenge,
       alternativeTreatment: validated.alternativeTreatment,
@@ -136,6 +139,8 @@ export async function createStory(
         const hebrewFieldNames: Record<string, string> = {
           'submitterFullName': 'שם מלא',
           'submitterPhone': 'מספר טלפון',
+          'therapistName': 'שם המטפל',
+          'therapistNameOther': 'תיאור שם המטפל',
           'healthChallenge.primary': 'תחום החלמה',
           'healthChallenge.primaryOtherText': 'תיאור תחום החלמה',
           'healthChallenge.sub': 'תת קטגוריה',
@@ -239,6 +244,8 @@ export async function updateStory(
     story.mayContact = validated.mayContact
     story.allowWhatsAppContact = validated.allowWhatsAppContact
     story.publicationChoice = validated.publicationChoice
+    story.therapistName = validated.therapistName
+    story.therapistNameOther = validated.therapistNameOther
     
     story.healthChallenge = validated.healthChallenge
     story.alternativeTreatment = validated.alternativeTreatment
@@ -514,5 +521,34 @@ export async function updateStoryStatus(
       success: false,
       error: 'An unexpected error occurred',
     }
+  }
+}
+
+/**
+ * Server Action: Get approved therapists
+ * Returns list of approved therapists for dropdown selection
+ */
+export async function getApprovedTherapists(): Promise<
+  { success: true; therapists: Array<{ id: string; fullName: string }> } | 
+  { success: false; error: string }
+> {
+  try {
+    await connectDB()
+    const therapists = await findMany(
+      Therapist,
+      { status: 'APPROVED' },
+      { fullName: 1 }
+    )
+    
+    return {
+      success: true,
+      therapists: therapists.map((t) => ({
+        id: t._id.toString(),
+        fullName: t.fullName
+      }))
+    }
+  } catch (error) {
+    console.error('Get approved therapists error:', error)
+    return { success: false, error: 'Failed to fetch therapists' }
   }
 }

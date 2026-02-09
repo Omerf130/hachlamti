@@ -52,6 +52,8 @@ export interface StoryDocument extends mongoose.Document {
   mayContact: boolean
   allowWhatsAppContact: boolean
   publicationChoice: PublicationChoice
+  therapistName: string
+  therapistNameOther?: string
   
   // A2. Health Challenge
   healthChallenge: HealthChallenge
@@ -135,6 +137,14 @@ const StorySchema = new Schema<StoryDocument>(
       type: String,
       enum: ['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS'],
       required: true,
+    },
+    therapistName: {
+      type: String,
+      required: true,
+    },
+    therapistNameOther: {
+      type: String,
+      required: false,
     },
     
     // A2. Health Challenge

@@ -3,7 +3,7 @@
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { createStory } from '@/app/actions/story'
+import { createStory, getApprovedTherapists } from '@/app/actions/story'
 import { useState, useEffect } from 'react'
 import styles from './page.module.scss'
 import { PRIMARY_OPTIONS, getSubOptions } from '@/lib/healthOptions'
@@ -17,6 +17,8 @@ const storyFormSchema = z.object({
   mayContact: z.boolean(),
   allowWhatsAppContact: z.boolean(),
   publicationChoice: z.enum(['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS']),
+  therapistName: z.string().min(1, 'יש לבחור מטפל'),
+  therapistNameOther: z.string().optional(),
 
   // A2. Health Challenge
   healthChallenge: z.object({
@@ -84,6 +86,14 @@ const storyFormSchema = z.object({
   declarationEditingConsent: z.literal(true, {
     errorMap: () => ({ message: 'יש לאשר אפשרות לעריכה' }),
   }),
+}).refine((data) => {
+  if (data.therapistName === 'אחר' && (!data.therapistNameOther || data.therapistNameOther.trim() === '')) {
+    return false
+  }
+  return true
+}, {
+  message: 'יש למלא את שם המטפל כאשר בוחרים אחר',
+  path: ['therapistNameOther']
 })
 
 type StoryFormInput = z.infer<typeof storyFormSchema>
@@ -94,6 +104,8 @@ export default function StorySubmissionForm(): JSX.Element {
   const [success, setSuccess] = useState<boolean>(false)
   const [subOptions, setSubOptions] = useState<string[]>(['אחר'])
   const [altTreatmentSubOptions, setAltTreatmentSubOptions] = useState<string[]>(['אחר'])
+  const [therapists, setTherapists] = useState<Array<{ id: string; fullName: string }>>([])
+
 
   const {
     register,
@@ -108,6 +120,8 @@ export default function StorySubmissionForm(): JSX.Element {
       publicationChoice: 'ANONYMOUS',
       mayContact: true,
       allowWhatsAppContact: false,
+      therapistName: '',
+      therapistNameOther: '',
       healthChallenge: {
         primary: '',
         primaryOtherText: '',
@@ -132,6 +146,20 @@ export default function StorySubmissionForm(): JSX.Element {
   // Watch primary selection for cascading dropdown (Alternative Treatment)
   const watchAltTreatmentPrimary = watch('alternativeTreatment.primary')
   const watchAltTreatmentSub = watch('alternativeTreatment.sub')
+
+  // Watch therapist name selection
+  const watchTherapistName = watch('therapistName')
+
+  // Fetch approved therapists on mount
+  useEffect(() => {
+    async function loadTherapists() {
+      const result = await getApprovedTherapists()
+      if (result.success) {
+        setTherapists(result.therapists)
+      }
+    }
+    loadTherapists()
+  }, [])
 
   // Update sub options when primary changes (Health Challenge)
   useEffect(() => {
@@ -203,8 +231,8 @@ export default function StorySubmissionForm(): JSX.Element {
         <div className={styles.container}>
           <div className={styles.success}>
             <h2>✨ תודה רבה על השיתוף!</h2>
-            <p>האתר יעלה לאוויר בקרוב, ואנשים רבים יוכלו לשאוב תקווה והשראה מהסיפור שלך.</p>
-            <p>הסיפור שלך יכול לשנות חיים. 💚</p>
+            <p>נשמח אם תשלח את הקישור הבא למטפל שעזר לך להחלים, נשמח שיהיה חלק מקהילת המטפלים שלנו, שיוכל לעזור גם למטופלים נוספים</p>
+            <p>https://hachlamti.vercel.app/</p>
           </div>
         </div>
       </div>
@@ -358,6 +386,43 @@ export default function StorySubmissionForm(): JSX.Element {
                 <span className={styles.fieldError}>{errors.publicationChoice.message}</span>
               )}
             </div>
+
+            <div className={styles.field}>
+              <label htmlFor="therapistName">שם המטפל *</label>
+              <select
+                id="therapistName"
+                {...register('therapistName')}
+                disabled={loading}
+              >
+                <option value="">בחר מטפל</option>
+                {therapists.map((therapist) => (
+                  <option key={therapist.id} value={therapist.fullName}>
+                    {therapist.fullName}
+                  </option>
+                ))}
+                <option value="אחר">אחר</option>
+              </select>
+              {errors.therapistName && (
+                <span className={styles.fieldError}>{errors.therapistName.message}</span>
+              )}
+            </div>
+
+            {/* Show therapistNameOther input if "אחר" is selected */}
+            {watchTherapistName === 'אחר' && (
+              <div className={styles.field}>
+                <label htmlFor="therapistNameOther">שם המטפל (טקסט חופשי) *</label>
+                <input
+                  id="therapistNameOther"
+                  type="text"
+                  {...register('therapistNameOther')}
+                  placeholder="הכנס את שם המטפל"
+                  disabled={loading}
+                />
+                {errors.therapistNameOther && (
+                  <span className={styles.fieldError}>{errors.therapistNameOther.message}</span>
+                )}
+              </div>
+            )}
           </section>
 
           {/* A2. Health Challenge */}
