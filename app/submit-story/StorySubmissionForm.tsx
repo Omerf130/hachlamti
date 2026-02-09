@@ -4,8 +4,9 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createStory } from '@/app/actions/story'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './page.module.scss'
+import { PRIMARY_OPTIONS, getSubOptions } from '@/lib/healthOptions'
 
 // Simplified form schema for client-side
 const storyFormSchema = z.object({
@@ -15,6 +16,26 @@ const storyFormSchema = z.object({
   mayContact: z.boolean(),
   allowWhatsAppContact: z.boolean(),
   publicationChoice: z.enum(['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS']),
+
+  // A2. Health Challenge
+  healthChallenge: z.object({
+    primary: z.string().min(1, 'יש לבחור תחום החלמה'),
+    primaryOtherText: z.string().optional(),
+    sub: z.string().min(1, 'יש לבחור תת קטגוריה'),
+    subOtherText: z.string().optional(),
+  }).refine((data) => {
+    // If primary is "אחר", primaryOtherText is required
+    if (data.primary === 'אחר' && (!data.primaryOtherText || data.primaryOtherText.trim() === '')) {
+      return false
+    }
+    // If sub is "אחר", subOtherText is required
+    if (data.sub === 'אחר' && (!data.subOtherText || data.subOtherText.trim() === '')) {
+      return false
+    }
+    return true
+  }, {
+    message: 'יש למלא את כל השדות הנדרשים',
+  }),
 
   // B. Story Content
   title: z.string().min(1, 'כותרת היא שדה חובה'),
@@ -46,11 +67,14 @@ export default function StorySubmissionForm(): JSX.Element {
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
+  const [subOptions, setSubOptions] = useState<string[]>(['אחר'])
 
   const {
     register,
     handleSubmit,
     control,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<StoryFormInput>({
     resolver: zodResolver(storyFormSchema),
@@ -58,8 +82,37 @@ export default function StorySubmissionForm(): JSX.Element {
       publicationChoice: 'ANONYMOUS',
       mayContact: true,
       allowWhatsAppContact: false,
+      healthChallenge: {
+        primary: '',
+        primaryOtherText: '',
+        sub: '',
+        subOtherText: '',
+      },
     },
   })
+
+  // Watch primary selection for cascading dropdown
+  const watchPrimary = watch('healthChallenge.primary')
+  const watchSub = watch('healthChallenge.sub')
+
+  // Update sub options when primary changes
+  useEffect(() => {
+    if (watchPrimary) {
+      const newSubOptions = getSubOptions(watchPrimary)
+      setSubOptions(newSubOptions)
+      
+      // Reset sub when primary changes
+      setValue('healthChallenge.sub', '')
+      setValue('healthChallenge.subOtherText', '')
+      
+      // If primary is "אחר", automatically set sub to "אחר"
+      if (watchPrimary === 'אחר') {
+        setValue('healthChallenge.sub', 'אחר')
+      }
+    } else {
+      setSubOptions(['אחר'])
+    }
+  }, [watchPrimary, setValue])
 
   const onSubmit = async (data: StoryFormInput): Promise<void> => {
     console.log('Form submitted with data:', data)
@@ -248,6 +301,83 @@ export default function StorySubmissionForm(): JSX.Element {
                 <span className={styles.fieldError}>{errors.publicationChoice.message}</span>
               )}
             </div>
+          </section>
+
+          {/* A2. Health Challenge */}
+          <section className={styles.section}>
+            <h2>האתגר הבריאותי</h2>
+
+            <div className={styles.field}>
+              <label htmlFor="healthChallenge.primary">תחומי החלמה ומצבים בריאותיים *</label>
+              <select
+                id="healthChallenge.primary"
+                {...register('healthChallenge.primary')}
+                disabled={loading}
+              >
+                <option value="">בחר תחום</option>
+                {PRIMARY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {errors.healthChallenge?.primary && (
+                <span className={styles.fieldError}>{errors.healthChallenge.primary.message}</span>
+              )}
+            </div>
+
+            {/* Show primaryOtherText input if primary is "אחר" */}
+            {watchPrimary === 'אחר' && (
+              <div className={styles.field}>
+                <label htmlFor="healthChallenge.primaryOtherText">פרט את תחום ההחלמה *</label>
+                <input
+                  id="healthChallenge.primaryOtherText"
+                  type="text"
+                  {...register('healthChallenge.primaryOtherText')}
+                  placeholder="הכנס את תחום ההחלמה"
+                  disabled={loading}
+                />
+                {errors.healthChallenge?.primaryOtherText && (
+                  <span className={styles.fieldError}>{errors.healthChallenge.primaryOtherText.message}</span>
+                )}
+              </div>
+            )}
+
+            <div className={styles.field}>
+              <label htmlFor="healthChallenge.sub">תת קטגוריה *</label>
+              <select
+                id="healthChallenge.sub"
+                {...register('healthChallenge.sub')}
+                disabled={loading || !watchPrimary}
+              >
+                <option value="">בחר תת קטגוריה</option>
+                {subOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+              {errors.healthChallenge?.sub && (
+                <span className={styles.fieldError}>{errors.healthChallenge.sub.message}</span>
+              )}
+            </div>
+
+            {/* Show subOtherText input if sub is "אחר" */}
+            {watchSub === 'אחר' && (
+              <div className={styles.field}>
+                <label htmlFor="healthChallenge.subOtherText">פרט את תת הקטגוריה *</label>
+                <input
+                  id="healthChallenge.subOtherText"
+                  type="text"
+                  {...register('healthChallenge.subOtherText')}
+                  placeholder="הכנס את תת הקטגוריה"
+                  disabled={loading}
+                />
+                {errors.healthChallenge?.subOtherText && (
+                  <span className={styles.fieldError}>{errors.healthChallenge.subOtherText.message}</span>
+                )}
+              </div>
+            )}
           </section>
 
           {/* B. Story Content */}

@@ -94,7 +94,10 @@ export async function createStory(
       submitterPhone: validated.submitterPhone,
       submissionDate: validated.submissionDate,
       mayContact: validated.mayContact,
+      allowWhatsAppContact: validated.allowWhatsAppContact,
       publicationChoice: validated.publicationChoice,
+      
+      healthChallenge: validated.healthChallenge,
       
       title: validated.title,
       problem: validated.problem,
@@ -132,6 +135,10 @@ export async function createStory(
         const hebrewFieldNames: Record<string, string> = {
           'submitterFullName': 'שם מלא',
           'submitterPhone': 'מספר טלפון',
+          'healthChallenge.primary': 'תחום החלמה',
+          'healthChallenge.primaryOtherText': 'תיאור תחום החלמה',
+          'healthChallenge.sub': 'תת קטגוריה',
+          'healthChallenge.subOtherText': 'תיאור תת קטגוריה',
           'title': 'כותרת',
           'problem': 'תיאור הבעיה',
           'previousAttempts': 'ניסיונות קודמים',
@@ -222,7 +229,10 @@ export async function updateStory(
     story.submitterFullName = validated.submitterFullName
     story.submitterPhone = validated.submitterPhone
     story.mayContact = validated.mayContact
+    story.allowWhatsAppContact = validated.allowWhatsAppContact
     story.publicationChoice = validated.publicationChoice
+    
+    story.healthChallenge = validated.healthChallenge
     
     story.title = validated.title
     story.problem = validated.problem

@@ -17,6 +17,16 @@ export type StoryStatus =
 export type PublicationChoice = 'FULL_NAME' | 'FIRST_NAME_ONLY' | 'ANONYMOUS'
 
 /**
+ * Health Challenge
+ */
+export interface HealthChallenge {
+  primary: string
+  primaryOtherText?: string
+  sub: string
+  subOtherText?: string
+}
+
+/**
  * Story Document Interface
  */
 export interface StoryDocument extends mongoose.Document {
@@ -30,6 +40,9 @@ export interface StoryDocument extends mongoose.Document {
   mayContact: boolean
   allowWhatsAppContact: boolean
   publicationChoice: PublicationChoice
+  
+  // A2. Health Challenge
+  healthChallenge: HealthChallenge
   
   // B. Story Content
   title: string
@@ -107,6 +120,30 @@ const StorySchema = new Schema<StoryDocument>(
       type: String,
       enum: ['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS'],
       required: true,
+    },
+    
+    // A2. Health Challenge
+    healthChallenge: {
+      type: {
+        primary: {
+          type: String,
+          required: true,
+        },
+        primaryOtherText: {
+          type: String,
+          required: false,
+        },
+        sub: {
+          type: String,
+          required: true,
+        },
+        subOtherText: {
+          type: String,
+          required: false,
+        },
+      },
+      required: true,
+      _id: false,
     },
     
     // B. Story Content
