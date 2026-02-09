@@ -3,6 +3,7 @@ import { findByIdAndStatus } from '@/lib/mongoose-helpers'
 import { notFound } from 'next/navigation'
 import styles from './page.module.scss'
 import sharedStyles from '@/styles/detail-page.module.scss'
+import Image from 'next/image'
 
 interface TherapistDetailPageProps {
   params: {
@@ -27,133 +28,212 @@ export default async function TherapistDetailPage({
     <main className={sharedStyles.main}>
       <article className={sharedStyles.container}>
         <header className={sharedStyles.header}>
+          {/* Profile Image */}
+          {therapist.profileImageUrl && (
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <Image
+                src={therapist.profileImageUrl}
+                alt={therapist.fullName}
+                width={200}
+                height={200}
+                style={{ borderRadius: '50%', objectFit: 'cover' }}
+              />
+            </div>
+          )}
+
           <h1 className={sharedStyles.title}>{therapist.fullName}</h1>
-          {therapist.treatmentSpecialties.length > 0 && (
-            <div className={sharedStyles.meta}>
-              <div className={styles.specialties}>
-                {therapist.treatmentSpecialties.map((specialty: string, index: number) => (
-                  <span key={index} className={styles.badge}>
-                    {specialty}
-                  </span>
-                ))}
-              </div>
+          
+          {/* Profession */}
+          <div className={sharedStyles.meta}>
+            <div className={styles.specialties}>
+              <span className={styles.badge}>
+                {therapist.profession.value === 'אחר' && therapist.profession.otherText
+                  ? therapist.profession.otherText
+                  : therapist.profession.value}
+              </span>
+            </div>
+          </div>
+
+          {/* Logo Image */}
+          {therapist.logoImageUrl && (
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <Image
+                src={therapist.logoImageUrl}
+                alt="Logo"
+                width={150}
+                height={150}
+                style={{ objectFit: 'contain' }}
+              />
             </div>
           )}
         </header>
 
         <div className={sharedStyles.content}>
-          {therapist.professionalDescription && (
+          {/* Credo and Specialty */}
+          {therapist.credoAndSpecialty && (
             <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>תיאור מקצועי</h2>
-              <p className={sharedStyles.text}>{therapist.professionalDescription}</p>
+              <h2 className={sharedStyles.sectionTitle}>אני מאמין והתמחות</h2>
+              <p className={sharedStyles.text}>{therapist.credoAndSpecialty}</p>
             </section>
           )}
 
-          {therapist.healthIssues.length > 0 && (
+          {/* Therapeutic Approach */}
+          {therapist.approachDescription && (
             <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>בעיות בריאות שאני עובד איתן</h2>
+              <h2 className={sharedStyles.sectionTitle}>גישה טיפולית</h2>
+              <p className={sharedStyles.text}>{therapist.approachDescription}</p>
+            </section>
+          )}
+
+          {/* Treated Conditions */}
+          {therapist.treatedConditions && therapist.treatedConditions.length > 0 && (
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>מצבים בריאותיים שאני מטפל בהם</h2>
+              <ul className={sharedStyles.text}>
+                {therapist.treatedConditions.map((condition: { primary: string; primaryOtherText?: string; sub: string; subOtherText?: string }, index: number) => {
+                  const primaryLabel = condition.primary === 'אחר' && condition.primaryOtherText
+                    ? condition.primaryOtherText
+                    : condition.primary
+                  const subLabel = condition.sub === 'אחר' && condition.subOtherText
+                    ? condition.subOtherText
+                    : condition.sub
+                  
+                  return (
+                    <li key={index}>
+                      <strong>{primaryLabel}</strong> → {subLabel}
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )}
+
+          {/* Education */}
+          {therapist.educationText && (
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>השכלה והסמכות</h2>
+              <p className={sharedStyles.text}>{therapist.educationText}</p>
+            </section>
+          )}
+
+          {/* Certificates */}
+          {therapist.certificates && therapist.certificates.length > 0 && (
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>תעודות הסמכה</h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                {therapist.certificates.map((cert: { url: string; fileName?: string }, index: number) => (
+                  <div key={index} style={{ maxWidth: '200px' }}>
+                    <Image
+                      src={cert.url}
+                      alt={cert.fileName || `תעודה ${index + 1}`}
+                      width={200}
+                      height={150}
+                      style={{ objectFit: 'cover', borderRadius: '8px' }}
+                    />
+                    {cert.fileName && (
+                      <p style={{ fontSize: '0.85rem', marginTop: '0.25rem', textAlign: 'center' }}>
+                        {cert.fileName}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Location */}
+          {therapist.location && (
+            <section className={sharedStyles.section}>
+              <h2 className={sharedStyles.sectionTitle}>מיקום ופעילות</h2>
               <p className={sharedStyles.text}>
-                {therapist.healthIssues.join(', ')}
+                <strong>עיר:</strong> {therapist.location.city}
+                {therapist.location.activityHours && (
+                  <>
+                    <br />
+                    <strong>שעות פעילות:</strong> {therapist.location.activityHours}
+                  </>
+                )}
+                {therapist.location.zoom && (
+                  <>
+                    <br />
+                    <strong>✓</strong> זמין לטיפול אונליין (Zoom/וידאו)
+                  </>
+                )}
               </p>
             </section>
           )}
 
-          {therapist.geographicArea && (
+          {/* Special Services */}
+          {therapist.specialServices && (
             <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>אזור גיאוגרפי</h2>
-              <p className={sharedStyles.text}>{therapist.geographicArea}</p>
+              <h2 className={sharedStyles.sectionTitle}>שירותים מיוחדים</h2>
+              <div className={sharedStyles.text}>
+                {therapist.specialServices.onlineTreatment && (
+                  <p>✓ טיפול אונליין (זום/וידאו)</p>
+                )}
+                {therapist.specialServices.homeVisits && (
+                  <p>✓ ביקורי בית</p>
+                )}
+                {therapist.specialServices.accessibleClinic && (
+                  <p>✓ גישה לנכים / קליניקה נגישה</p>
+                )}
+                {therapist.specialServices.languages && therapist.specialServices.languages.length > 0 && (
+                  <p>
+                    <strong>שפות:</strong> {therapist.specialServices.languages.join(', ')}
+                  </p>
+                )}
+              </div>
             </section>
           )}
 
-          {therapist.clinicAddress && (
+          {/* Inspiration Story */}
+          {therapist.inspirationStory && (
             <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>כתובת הקליניקה</h2>
-              <p className={sharedStyles.text}>{therapist.clinicAddress}</p>
+              <h2 className={sharedStyles.sectionTitle}>סיפור השראה</h2>
+              <p className={sharedStyles.text}>{therapist.inspirationStory}</p>
             </section>
           )}
 
-          {therapist.treatmentLocations.length > 0 && (
-            <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>היכן ניתן הטיפול?</h2>
-              <p className={sharedStyles.text}>
-                {therapist.treatmentLocations.map((loc: string) => {
-                  switch (loc) {
-                    case 'FIXED_CLINIC': return 'קליניקה קבועה'
-                    case 'HOME_VISITS': return 'ביקורי בית'
-                    case 'REMOTE': return 'מרחוק (אונליין / טלפון)'
-                    case 'COMBINATION': return 'שילוב'
-                    default: return loc
-                  }
-                }).join(', ')}
-              </p>
-            </section>
-          )}
-
-          {therapist.languages.length > 0 && (
-            <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>שפות</h2>
-              <p className={sharedStyles.text}>
-                {therapist.languages.join(', ')}
-              </p>
-            </section>
-          )}
-
-          {therapist.yearsExperience !== undefined && (
-            <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>שנות ניסיון</h2>
-              <p className={sharedStyles.text}>{therapist.yearsExperience} שנים</p>
-            </section>
-          )}
-
-          {therapist.phoneWhatsApp && (
+          {/* Contact Details */}
+          {therapist.contacts && (
             <section className={sharedStyles.section}>
               <h2 className={sharedStyles.sectionTitle}>יצירת קשר</h2>
-              <p className={sharedStyles.text}>
-                <a 
-                  href={`https://wa.me/${therapist.phoneWhatsApp.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.whatsappLink}
-                >
-                  📱 שלח הודעת וואטסאפ
-                </a>
-              </p>
-            </section>
-          )}
-
-          {therapist.externalLinks && (
-            <section className={sharedStyles.section}>
-              <h2 className={sharedStyles.sectionTitle}>קישורים חיצוניים</h2>
-              <div className={styles.links}>
-                {therapist.externalLinks.website && (
-                  <a 
-                    href={therapist.externalLinks.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.externalLink}
-                  >
-                    🌐 אתר אישי
-                  </a>
+              <div className={sharedStyles.text}>
+                {therapist.contacts.email && (
+                  <p>
+                    <strong>אימייל:</strong>{' '}
+                    <a href={`mailto:${therapist.contacts.email}`}>{therapist.contacts.email}</a>
+                  </p>
                 )}
-                {therapist.externalLinks.facebook && (
-                  <a 
-                    href={therapist.externalLinks.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.externalLink}
-                  >
-                    📘 פייסבוק
-                  </a>
+                {therapist.contacts.displayPhone && (
+                  <p>
+                    <strong>טלפון להצגה:</strong> {therapist.contacts.displayPhone}
+                  </p>
                 )}
-                {therapist.externalLinks.instagram && (
-                  <a 
-                    href={therapist.externalLinks.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.externalLink}
-                  >
-                    📷 אינסטגרם
-                  </a>
+                {therapist.contacts.bookingPhone && (
+                  <p>
+                    <strong>טלפון לתיאומים:</strong>{' '}
+                    <a 
+                      href={`https://wa.me/${therapist.contacts.bookingPhone.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.whatsappLink}
+                    >
+                      {therapist.contacts.bookingPhone} 📱
+                    </a>
+                  </p>
+                )}
+                {therapist.contacts.websiteUrl && (
+                  <p>
+                    <a 
+                      href={therapist.contacts.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.externalLink}
+                    >
+                      🌐 אתר / פייסבוק
+                    </a>
+                  </p>
                 )}
               </div>
             </section>
@@ -163,4 +243,3 @@ export default async function TherapistDetailPage({
     </main>
   )
 }
-

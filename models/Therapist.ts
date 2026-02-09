@@ -6,56 +6,59 @@ import mongoose, { Schema, model, models } from 'mongoose'
 export type TherapistStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'
 
 /**
- * Treatment Location Type
+ * Health Challenge (same structure as Story)
  */
-export type TreatmentLocationType = 'FIXED_CLINIC' | 'HOME_VISITS' | 'REMOTE' | 'COMBINATION'
-
-/**
- * Health Issue Option
- */
-export type HealthIssue = 'BACK_PAIN' | 'ANXIETY' | 'DIGESTIVE_ISSUES' | 'PTSD' | 'DIABETES' | 'OTHER'
-
-/**
- * Language Option
- */
-export type Language = 'HEBREW' | 'ENGLISH' | 'RUSSIAN' | 'ARABIC' | 'FRENCH' | 'OTHER'
-
-/**
- * Weekly Session Time
- */
-export interface SessionTime {
-  from: string // HH:MM format
-  to: string // HH:MM format
+export interface HealthChallenge {
+  primary: string
+  primaryOtherText?: string
+  sub: string
+  subOtherText?: string
 }
 
 /**
- * Day Schedule
+ * Certificate Document
  */
-export interface DaySchedule {
-  sessionA?: SessionTime
-  sessionB?: SessionTime
+export interface Certificate {
+  url: string // base64 encoded
+  fileName?: string
 }
 
 /**
- * Weekly Availability
+ * Profession Info
  */
-export interface WeeklyAvailability {
-  sunday?: DaySchedule
-  monday?: DaySchedule
-  tuesday?: DaySchedule
-  wednesday?: DaySchedule
-  thursday?: DaySchedule
-  friday?: DaySchedule
-  saturday?: DaySchedule
+export interface Profession {
+  value: string
+  otherText?: string
 }
 
 /**
- * External Links
+ * Location Info
  */
-export interface ExternalLinks {
-  website?: string
-  facebook?: string
-  instagram?: string
+export interface Location {
+  city: string
+  activityHours?: string
+  zoom: boolean
+}
+
+/**
+ * Special Services (for filtering)
+ */
+export interface SpecialServices {
+  onlineTreatment: boolean
+  homeVisits: boolean
+  accessibleClinic: boolean
+  languages: string[]
+  languagesOtherText?: string
+}
+
+/**
+ * Contact Details
+ */
+export interface Contacts {
+  displayPhone?: string
+  bookingPhone?: string
+  websiteUrl?: string
+  email: string
 }
 
 /**
@@ -64,37 +67,41 @@ export interface ExternalLinks {
 export interface TherapistDocument extends mongoose.Document {
   userId: mongoose.Types.ObjectId
   status: TherapistStatus
-  
-  // A. Personal & Professional Details
+
+  // Basic Info
   fullName: string
-  phoneWhatsApp: string
-  treatmentSpecialties: string[] // free text/tags
-  yearsExperience: number
-  
-  // B. Professional Profile
-  professionalDescription: string
-  healthIssues: string[] // includes predefined + "other" text
-  languages: string[] // includes predefined + "other" text
-  geographicArea: string
-  clinicAddress?: string
-  treatmentLocations: TreatmentLocationType[]
-  
-  // C. Availability
-  availability: WeeklyAvailability
-  
-  // D. External Links
-  externalLinks?: ExternalLinks
-  
-  // E. Declarations (boolean flags - all must be true to submit)
-  declarationAccurate: boolean
-  declarationCertified: boolean
-  declarationTerms: boolean
-  declarationConsent: boolean
-  declarationResponsibility: boolean
-  
-  // F. Additional Notes
-  additionalNotes?: string
-  
+  profileImageUrl: string // base64 encoded
+  logoImageUrl?: string // base64 encoded, optional
+
+  // Profession
+  profession: Profession
+
+  // Location & Activity
+  location: Location
+
+  // Education & Credentials
+  educationText?: string
+  certificates: Certificate[] // max 10
+
+  // Special Services (for filtering)
+  specialServices: SpecialServices
+
+  // Professional Info
+  credoAndSpecialty: string // "אני מאמין"
+
+  // Treated Conditions (multiple selections with same cascading structure as Story)
+  treatedConditions: HealthChallenge[] // min 1
+
+  // Approach & Story
+  approachDescription: string // therapeutic approach (required)
+  inspirationStory?: string // optional short story
+
+  // Contact Details (to display on site)
+  contacts: Contacts
+
+  // Consent
+  consentJoin: boolean // required true
+
   createdAt: Date
   updatedAt: Date
 }
@@ -116,95 +123,158 @@ const TherapistSchema = new Schema<TherapistDocument>(
       required: true,
       default: 'PENDING',
     },
-    
-    // A. Personal & Professional Details
+
+    // Basic Info
     fullName: {
       type: String,
       required: true,
     },
-    phoneWhatsApp: {
+    profileImageUrl: {
       type: String,
       required: true,
     },
-    treatmentSpecialties: {
-      type: [String],
-      required: true,
-      default: [],
-    },
-    yearsExperience: {
-      type: Number,
-      required: true,
-    },
-    
-    // B. Professional Profile
-    professionalDescription: {
-      type: String,
-      required: true,
-    },
-    healthIssues: {
-      type: [String],
-      required: true,
-      default: [],
-    },
-    languages: {
-      type: [String],
-      required: true,
-      default: [],
-    },
-    geographicArea: {
-      type: String,
-      required: true,
-    },
-    clinicAddress: {
+    logoImageUrl: {
       type: String,
       required: false,
     },
-    treatmentLocations: {
-      type: [String],
-      required: true,
-      default: [],
+
+    // Profession
+    profession: {
+      value: {
+        type: String,
+        required: true,
+      },
+      otherText: {
+        type: String,
+        required: false,
+      },
     },
-    
-    // C. Availability
-    availability: {
-      type: Schema.Types.Mixed,
-      required: false,
-      default: {},
+
+    // Location & Activity
+    location: {
+      city: {
+        type: String,
+        required: true,
+      },
+      activityHours: {
+        type: String,
+        required: false,
+      },
+      zoom: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
     },
-    
-    // D. External Links
-    externalLinks: {
-      website: { type: String, required: false },
-      facebook: { type: String, required: false },
-      instagram: { type: String, required: false },
-    },
-    
-    // E. Declarations
-    declarationAccurate: {
-      type: Boolean,
-      required: true,
-    },
-    declarationCertified: {
-      type: Boolean,
-      required: true,
-    },
-    declarationTerms: {
-      type: Boolean,
-      required: true,
-    },
-    declarationConsent: {
-      type: Boolean,
-      required: true,
-    },
-    declarationResponsibility: {
-      type: Boolean,
-      required: true,
-    },
-    
-    // G. Additional Notes
-    additionalNotes: {
+
+    // Education & Credentials
+    educationText: {
       type: String,
       required: false,
+    },
+    certificates: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        fileName: {
+          type: String,
+          required: false,
+        },
+      },
+    ],
+
+    // Special Services
+    specialServices: {
+      onlineTreatment: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      homeVisits: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      accessibleClinic: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      languages: {
+        type: [String],
+        required: true,
+        default: [],
+      },
+      languagesOtherText: {
+        type: String,
+        required: false,
+      },
+    },
+
+    // Professional Info
+    credoAndSpecialty: {
+      type: String,
+      required: true,
+    },
+
+    // Treated Conditions
+    treatedConditions: [
+      {
+        primary: {
+          type: String,
+          required: true,
+        },
+        primaryOtherText: {
+          type: String,
+          required: false,
+        },
+        sub: {
+          type: String,
+          required: true,
+        },
+        subOtherText: {
+          type: String,
+          required: false,
+        },
+      },
+    ],
+
+    // Approach & Story
+    approachDescription: {
+      type: String,
+      required: true,
+    },
+    inspirationStory: {
+      type: String,
+      required: false,
+    },
+
+    // Contact Details
+    contacts: {
+      displayPhone: {
+        type: String,
+        required: false,
+      },
+      bookingPhone: {
+        type: String,
+        required: false,
+      },
+      websiteUrl: {
+        type: String,
+        required: false,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
+    },
+
+    // Consent
+    consentJoin: {
+      type: Boolean,
+      required: true,
     },
   },
   {
@@ -214,9 +284,9 @@ const TherapistSchema = new Schema<TherapistDocument>(
 
 // Create indexes
 TherapistSchema.index({ status: 1 })
-TherapistSchema.index({ geographicArea: 1 })
-TherapistSchema.index({ treatmentSpecialties: 1 })
-TherapistSchema.index({ healthIssues: 1 })
+TherapistSchema.index({ 'profession.value': 1 })
+TherapistSchema.index({ 'location.city': 1 })
+TherapistSchema.index({ 'treatedConditions.primary': 1 })
 
 // Prevent model recompilation in development
 const Therapist =

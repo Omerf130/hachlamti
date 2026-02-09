@@ -13,51 +13,72 @@ export const TherapistStatusSchema = z.enum([
 export type TherapistStatus = z.infer<typeof TherapistStatusSchema>
 
 /**
- * Treatment Location Type
+ * Health Challenge Schema (same as Story)
  */
-export const TreatmentLocationSchema = z.enum([
-  'FIXED_CLINIC',
-  'HOME_VISITS',
-  'REMOTE',
-  'COMBINATION',
-])
-
-/**
- * Session Time Schema
- */
-export const SessionTimeSchema = z.object({
-  from: z.string().regex(/^\d{2}:\d{2}$/, 'זמן חייב להיות בפורמט HH:MM'),
-  to: z.string().regex(/^\d{2}:\d{2}$/, 'זמן חייב להיות בפורמט HH:MM'),
+export const HealthChallengeSchema = z.object({
+  primary: z.string().min(1, 'יש לבחור קטגוריה ראשית'),
+  primaryOtherText: z.string().optional(),
+  sub: z.string().min(1, 'יש לבחור תת-קטגוריה'),
+  subOtherText: z.string().optional(),
 })
 
 /**
- * Day Schedule Schema
+ * Certificate Schema
  */
-export const DayScheduleSchema = z.object({
-  sessionA: SessionTimeSchema.optional(),
-  sessionB: SessionTimeSchema.optional(),
+export const CertificateSchema = z.object({
+  url: z.string(),
+  fileName: z.string().optional(),
 })
 
 /**
- * Weekly Availability Schema
+ * Profession Schema
  */
-export const WeeklyAvailabilitySchema = z.object({
-  sunday: DayScheduleSchema.optional(),
-  monday: DayScheduleSchema.optional(),
-  tuesday: DayScheduleSchema.optional(),
-  wednesday: DayScheduleSchema.optional(),
-  thursday: DayScheduleSchema.optional(),
-  friday: DayScheduleSchema.optional(),
-  saturday: DayScheduleSchema.optional(),
+export const ProfessionSchema = z
+  .object({
+    value: z.string().min(1, 'יש לבחור מקצוע'),
+    otherText: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.value === 'אחר' && (!data.otherText || data.otherText.trim() === '')) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'יש למלא את שם המקצוע כאשר בוחרים אחר',
+      path: ['otherText'],
+    }
+  )
+
+/**
+ * Location Schema
+ */
+export const LocationSchema = z.object({
+  city: z.string().min(1, 'עיר היא שדה חובה'),
+  activityHours: z.string().optional(),
+  zoom: z.boolean(),
 })
 
 /**
- * External Links Schema
+ * Special Services Schema
  */
-export const ExternalLinksSchema = z.object({
-  website: z.string().url('כתובת אתר לא תקינה').optional().or(z.literal('')),
-  facebook: z.string().url('כתובת פייסבוק לא תקינה').optional().or(z.literal('')),
-  instagram: z.string().url('כתובת אינסטגרם לא תקינה').optional().or(z.literal('')),
+export const SpecialServicesSchema = z.object({
+  onlineTreatment: z.boolean(),
+  homeVisits: z.boolean(),
+  accessibleClinic: z.boolean(),
+  languages: z.array(z.string()).min(1, 'יש לבחור לפחות שפה אחת'),
+  languagesOtherText: z.string().optional(),
+})
+
+/**
+ * Contacts Schema
+ */
+export const ContactsSchema = z.object({
+  displayPhone: z.string().optional(),
+  bookingPhone: z.string().optional(),
+  websiteUrl: z.string().url('כתובת אתר לא תקינה').optional().or(z.literal('')),
+  email: z.string().email('כתובת אימייל לא תקינה'),
 })
 
 /**
@@ -65,45 +86,41 @@ export const ExternalLinksSchema = z.object({
  * Used in createTherapist Server Action
  */
 export const createTherapistSchema = z.object({
-  // A. Personal & Professional Details
+  // Basic Info
   fullName: z.string().min(1, 'שם מלא הוא שדה חובה'),
-  phoneWhatsApp: z.string().min(1, 'מספר טלפון (ווטסאפ) הוא שדה חובה'),
-  treatmentSpecialties: z.array(z.string()).min(1, 'יש להזין לפחות תחום התמחות אחד'),
-  yearsExperience: z.number().int().min(0, 'שנות ניסיון חייבות להיות מספר חיובי'),
-  
-  // B. Professional Profile
-  professionalDescription: z.string().min(1, 'תיאור מקצועי הוא שדה חובה'),
-  healthIssues: z.array(z.string()).min(1, 'יש לבחור לפחות בעיה בריאותית אחת'),
-  languages: z.array(z.string()).min(1, 'יש לבחור לפחות שפה אחת'),
-  geographicArea: z.string().min(1, 'אזור גיאוגרפי הוא שדה חובה'),
-  clinicAddress: z.string().optional(),
-  treatmentLocations: z.array(TreatmentLocationSchema).min(1, 'יש לבחור לפחות מיקום טיפול אחד'),
-  
-  // C. Availability
-  availability: WeeklyAvailabilitySchema,
-  
-  // D. External Links
-  externalLinks: ExternalLinksSchema.optional(),
-  
-  // E. Declarations (all must be true)
-  declarationAccurate: z.literal(true, {
-    errorMap: () => ({ message: 'יש לאשר שהמידע מדויק ואמיתי' }),
+  profileImageUrl: z.string().min(1, 'תמונת פרופיל היא שדה חובה'),
+  logoImageUrl: z.string().optional(),
+
+  // Profession
+  profession: ProfessionSchema,
+
+  // Location & Activity
+  location: LocationSchema,
+
+  // Education & Credentials
+  educationText: z.string().optional(),
+  certificates: z.array(CertificateSchema).max(10, 'ניתן להעלות עד 10 תעודות'),
+
+  // Special Services
+  specialServices: SpecialServicesSchema,
+
+  // Professional Info
+  credoAndSpecialty: z.string().min(1, 'אני מאמין והתמחות הם שדות חובה'),
+
+  // Treated Conditions
+  treatedConditions: z.array(HealthChallengeSchema).min(1, 'יש לבחור לפחות מצב בריאותי אחד'),
+
+  // Approach & Story
+  approachDescription: z.string().min(1, 'תיאור גישה טיפולית הוא שדה חובה'),
+  inspirationStory: z.string().optional(),
+
+  // Contact Details
+  contacts: ContactsSchema,
+
+  // Consent
+  consentJoin: z.literal(true, {
+    errorMap: () => ({ message: 'יש לאשר הצטרפות לקהילה' }),
   }),
-  declarationCertified: z.literal(true, {
-    errorMap: () => ({ message: 'יש לאשר שאתה מטפל מוסמך' }),
-  }),
-  declarationTerms: z.literal(true, {
-    errorMap: () => ({ message: 'יש לאשר את תנאי השימוש' }),
-  }),
-  declarationConsent: z.literal(true, {
-    errorMap: () => ({ message: 'יש לאשר את הסכמה לפרסום הפרופיל' }),
-  }),
-  declarationResponsibility: z.literal(true, {
-    errorMap: () => ({ message: 'יש לאשר את הבנת האחריות' }),
-  }),
-  
-  // F. Additional Notes
-  additionalNotes: z.string().optional(),
 })
 
 export type CreateTherapistInput = z.infer<typeof createTherapistSchema>
@@ -118,6 +135,4 @@ export const updateTherapistStatusSchema = z.object({
   notes: z.string().optional(),
 })
 
-export type UpdateTherapistStatusInput = z.infer<
-  typeof updateTherapistStatusSchema
->
+export type UpdateTherapistStatusInput = z.infer<typeof updateTherapistStatusSchema>

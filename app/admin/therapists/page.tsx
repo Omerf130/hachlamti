@@ -65,39 +65,36 @@ export default async function TherapistApplicationsPage({ searchParams }: PagePr
               <div className={styles.cardBody}>
                 <div className={styles.field}>
                   <span className={styles.label}>📧 אימייל:</span>
-                  <span className={styles.value}>{therapist.email}</span>
+                  <span className={styles.value}>{therapist.contacts?.email || 'לא צוין'}</span>
                 </div>
 
                 <div className={styles.field}>
                   <span className={styles.label}>📱 טלפון:</span>
-                  <span className={styles.value}>{therapist.phoneWhatsApp}</span>
-                </div>
-
-                {Array.isArray(therapist.treatmentSpecialties) &&
-                  therapist.treatmentSpecialties.length > 0 && (
-                    <div className={styles.field}>
-                      <span className={styles.label}>🎯 התמחויות:</span>
-                      <div className={styles.specialties}>
-                        {therapist.treatmentSpecialties.map(
-                          (specialty: string, idx: number) => (
-                            <span key={idx} className={styles.specialty}>
-                              {specialty}
-                            </span>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                <div className={styles.field}>
-                  <span className={styles.label}>📍 אזור:</span>
-                  <span className={styles.value}>{therapist.geographicArea}</span>
+                  <span className={styles.value}>
+                    {therapist.contacts?.bookingPhone || therapist.contacts?.displayPhone || 'לא צוין'}
+                  </span>
                 </div>
 
                 <div className={styles.field}>
-                  <span className={styles.label}>⏱️ ניסיון:</span>
-                  <span className={styles.value}>{therapist.yearsExperience} שנים</span>
+                  <span className={styles.label}>🎯 מקצוע:</span>
+                  <span className={styles.specialty}>
+                    {therapist.profession?.value === 'אחר' && therapist.profession?.otherText
+                      ? therapist.profession.otherText
+                      : therapist.profession?.value || 'לא צוין'}
+                  </span>
                 </div>
+
+                <div className={styles.field}>
+                  <span className={styles.label}>📍 עיר:</span>
+                  <span className={styles.value}>{therapist.location?.city || 'לא צוין'}</span>
+                </div>
+
+                {therapist.treatedConditions && therapist.treatedConditions.length > 0 && (
+                  <div className={styles.field}>
+                    <span className={styles.label}>🏥 מצבים בריאותיים:</span>
+                    <span className={styles.value}>{therapist.treatedConditions.length} מצבים</span>
+                  </div>
+                )}
 
                 <div className={styles.field}>
                   <span className={styles.label}>📅 תאריך הגשה:</span>

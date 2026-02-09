@@ -52,29 +52,40 @@ export async function createTherapist(
     const therapist = new Therapist({
       userId: new mongoose.Types.ObjectId(session.user.id),
       status: 'PENDING',
+      
+      // Basic Info
       fullName: validated.fullName,
-      phoneWhatsApp: validated.phoneWhatsApp,
-      treatmentSpecialties: validated.treatmentSpecialties,
-      yearsExperience: validated.yearsExperience,
+      profileImageUrl: validated.profileImageUrl,
+      logoImageUrl: validated.logoImageUrl,
       
-      professionalDescription: validated.professionalDescription,
-      healthIssues: validated.healthIssues,
-      languages: validated.languages,
-      geographicArea: validated.geographicArea,
-      clinicAddress: validated.clinicAddress,
-      treatmentLocations: validated.treatmentLocations,
+      // Profession
+      profession: validated.profession,
       
-      availability: validated.availability,
+      // Location & Activity
+      location: validated.location,
       
-      externalLinks: validated.externalLinks,
+      // Education & Credentials
+      educationText: validated.educationText,
+      certificates: validated.certificates,
       
-      declarationAccurate: validated.declarationAccurate,
-      declarationCertified: validated.declarationCertified,
-      declarationTerms: validated.declarationTerms,
-      declarationConsent: validated.declarationConsent,
-      declarationResponsibility: validated.declarationResponsibility,
+      // Special Services
+      specialServices: validated.specialServices,
       
-      additionalNotes: validated.additionalNotes,
+      // Professional Info
+      credoAndSpecialty: validated.credoAndSpecialty,
+      
+      // Treated Conditions
+      treatedConditions: validated.treatedConditions,
+      
+      // Approach & Story
+      approachDescription: validated.approachDescription,
+      inspirationStory: validated.inspirationStory,
+      
+      // Contact Details
+      contacts: validated.contacts,
+      
+      // Consent
+      consentJoin: validated.consentJoin,
     })
 
     await therapist.save()
@@ -94,19 +105,29 @@ export async function createTherapist(
         const field = err.path.join('.')
         const hebrewFieldNames: Record<string, string> = {
           'fullName': 'שם מלא',
-          'phoneWhatsApp': 'טלפון',
-          'treatmentSpecialties': 'התמחויות טיפוליות',
-          'yearsExperience': 'שנות ניסיון',
-          'professionalDescription': 'תיאור מקצועי',
-          'healthIssues': 'בעיות בריאות',
-          'languages': 'שפות',
-          'geographicArea': 'אזור גיאוגרפי',
-          'treatmentLocations': 'מקומות טיפול',
-          'declarationAccurate': 'אישור דיוק',
-          'declarationCertified': 'אישור הסמכה',
-          'declarationTerms': 'אישור תנאי שימוש',
-          'declarationConsent': 'אישור פרסום',
-          'declarationResponsibility': 'אישור אחריות',
+          'profileImageUrl': 'תמונת פרופיל',
+          'logoImageUrl': 'תמונת לוגו',
+          'profession.value': 'מקצוע',
+          'profession.otherText': 'שם המקצוע',
+          'location.city': 'עיר',
+          'location.activityHours': 'שעות פעילות',
+          'location.zoom': 'זמינות אונליין',
+          'educationText': 'השכלה',
+          'certificates': 'תעודות',
+          'specialServices.onlineTreatment': 'טיפול אונליין',
+          'specialServices.homeVisits': 'ביקורי בית',
+          'specialServices.accessibleClinic': 'קליניקה נגישה',
+          'specialServices.languages': 'שפות',
+          'specialServices.languagesOtherText': 'שפות נוספות',
+          'credoAndSpecialty': 'אני מאמין והתמחות',
+          'treatedConditions': 'מצבים בריאותיים',
+          'approachDescription': 'גישה טיפולית',
+          'inspirationStory': 'סיפור השראה',
+          'contacts.displayPhone': 'טלפון להצגה',
+          'contacts.bookingPhone': 'טלפון לתיאומים',
+          'contacts.websiteUrl': 'אתר',
+          'contacts.email': 'אימייל',
+          'consentJoin': 'הסכמת הצטרפות',
         }
         
         const hebrewField = hebrewFieldNames[field] || field
