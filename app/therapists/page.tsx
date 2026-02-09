@@ -26,14 +26,18 @@ export default async function TherapistsPage(): Promise<JSX.Element> {
                 className={sharedStyles.link}
               >
                 <div className={styles.therapistName}>{therapist.fullName}</div>
-                <div className={styles.therapistSpecialties}>
-                  {therapist.profession.value === 'אחר' && therapist.profession.otherText
-                    ? therapist.profession.otherText
-                    : therapist.profession.value}
-                </div>
-                <div className={styles.therapistLocation}>
-                  {therapist.location.city}
-                </div>
+                {therapist.profession && (
+                  <div className={styles.therapistSpecialties}>
+                    {therapist.profession.value === 'אחר' && therapist.profession.otherText
+                      ? therapist.profession.otherText
+                      : therapist.profession.value}
+                  </div>
+                )}
+                {therapist.location && (
+                  <div className={styles.therapistLocation}>
+                    {therapist.location.city}
+                  </div>
+                )}
               </Link>
             </li>
           ))}
