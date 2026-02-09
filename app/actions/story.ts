@@ -102,10 +102,7 @@ export async function createStory(
       title: validated.title,
       problem: validated.problem,
       previousAttempts: validated.previousAttempts,
-      solution: validated.solution,
-      results: validated.results,
       messageToOthers: validated.messageToOthers,
-      freeTextStory: validated.freeTextStory,
       
       declarationTruthful: validated.declarationTruthful,
       declarationConsent: validated.declarationConsent,
@@ -139,11 +136,11 @@ export async function createStory(
           'healthChallenge.primaryOtherText': 'תיאור תחום החלמה',
           'healthChallenge.sub': 'תת קטגוריה',
           'healthChallenge.subOtherText': 'תיאור תת קטגוריה',
+          'healthChallenge.durationBeforeRecovery': 'משך הסבל מהבעיה',
+          'healthChallenge.impactOnQualityOfLife': 'השפעה על איכות החיים',
           'title': 'כותרת',
           'problem': 'תיאור הבעיה',
           'previousAttempts': 'ניסיונות קודמים',
-          'solution': 'הפתרון',
-          'results': 'תוצאות',
           'messageToOthers': 'הודעה לאחרים',
           'declarationTruthful': 'אישור אמיתות',
           'declarationConsent': 'אישור פרסום',
@@ -237,10 +234,7 @@ export async function updateStory(
     story.title = validated.title
     story.problem = validated.problem
     story.previousAttempts = validated.previousAttempts
-    story.solution = validated.solution
-    story.results = validated.results
     story.messageToOthers = validated.messageToOthers
-    story.freeTextStory = validated.freeTextStory
 
     // Recompute displayName
     story.displayName = computeDisplayName(

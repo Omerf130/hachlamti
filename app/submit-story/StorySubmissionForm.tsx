@@ -23,6 +23,8 @@ const storyFormSchema = z.object({
     primaryOtherText: z.string().optional(),
     sub: z.string().min(1, 'יש לבחור תת קטגוריה'),
     subOtherText: z.string().optional(),
+    durationBeforeRecovery: z.string().min(1, 'יש למלא כמה זמן סבלת מהבעיה'),
+    impactOnQualityOfLife: z.string().min(1, 'יש למלא כיצד המחלה השפיעה על איכות החיים'),
   }).refine((data) => {
     // If primary is "אחר", primaryOtherText is required
     if (data.primary === 'אחר' && (!data.primaryOtherText || data.primaryOtherText.trim() === '')) {
@@ -41,10 +43,7 @@ const storyFormSchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
-  solution: z.string().min(1, 'תיאור הפתרון הוא שדה חובה'),
-  results: z.string().min(1, 'תיאור התוצאות הוא שדה חובה'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
-  freeTextStory: z.string().optional(),
 
   // C. Declarations - must be true
   declarationTruthful: z.literal(true, {
@@ -87,6 +86,8 @@ export default function StorySubmissionForm(): JSX.Element {
         primaryOtherText: '',
         sub: '',
         subOtherText: '',
+        durationBeforeRecovery: '',
+        impactOnQualityOfLife: '',
       },
     },
   })
@@ -378,11 +379,39 @@ export default function StorySubmissionForm(): JSX.Element {
                 )}
               </div>
             )}
+
+            <div className={styles.field}>
+              <label htmlFor="healthChallenge.durationBeforeRecovery">כמה זמן סבלת מהבעיה לפני ההחלמה *</label>
+              <input
+                id="healthChallenge.durationBeforeRecovery"
+                type="text"
+                {...register('healthChallenge.durationBeforeRecovery')}
+                placeholder='לדוגמה: "שנתיים" או "כמה חודשים"'
+                disabled={loading}
+              />
+              {errors.healthChallenge?.durationBeforeRecovery && (
+                <span className={styles.fieldError}>{errors.healthChallenge.durationBeforeRecovery.message}</span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="healthChallenge.impactOnQualityOfLife">איך המחלה השפיעה על איכות החיים שלך *</label>
+              <textarea
+                id="healthChallenge.impactOnQualityOfLife"
+                {...register('healthChallenge.impactOnQualityOfLife')}
+                rows={4}
+                placeholder="תאר כיצד הבעיה השפיעה על חייך היומיומיים"
+                disabled={loading}
+              />
+              {errors.healthChallenge?.impactOnQualityOfLife && (
+                <span className={styles.fieldError}>{errors.healthChallenge.impactOnQualityOfLife.message}</span>
+              )}
+            </div>
           </section>
 
           {/* B. Story Content */}
           <section className={styles.section}>
-            <h2>תוכן הסיפור</h2>
+            <h2>תהליך ההחלמה</h2>
 
             <div className={styles.field}>
               <label htmlFor="title">כותרת *</label>
@@ -427,34 +456,6 @@ export default function StorySubmissionForm(): JSX.Element {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="solution">הפתרון שעזר: סוג הטיפול, תיאור, משך וחוויה *</label>
-              <textarea
-                id="solution"
-                {...register('solution')}
-                rows={6}
-                placeholder="תאר את הטיפול שעזר לך, כמה זמן זה לקח, ואיך היה התהליך"
-                disabled={loading}
-              />
-              {errors.solution && (
-                <span className={styles.fieldError}>{errors.solution.message}</span>
-              )}
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="results">תוצאות: מה מצבך היום? *</label>
-              <textarea
-                id="results"
-                {...register('results')}
-                rows={5}
-                placeholder="תאר מה המצב שלך כיום לאחר הטיפול"
-                disabled={loading}
-              />
-              {errors.results && (
-                <span className={styles.fieldError}>{errors.results.message}</span>
-              )}
-            </div>
-
-            <div className={styles.field}>
               <label htmlFor="messageToOthers">מסר לאחרים: מה היית אומר למישהו שעובר את זה כרגע? *</label>
               <textarea
                 id="messageToOthers"
@@ -466,21 +467,6 @@ export default function StorySubmissionForm(): JSX.Element {
               {errors.messageToOthers && (
                 <span className={styles.fieldError}>{errors.messageToOthers.message}</span>
               )}
-            </div>
-
-            <div className={styles.divider}>
-              <p>✨ או לחלופין ✨</p>
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="freeTextStory">ניתן לכתוב את הסיפור המלא באופן חופשי למטה (אופציונלי)</label>
-              <textarea
-                id="freeTextStory"
-                {...register('freeTextStory')}
-                rows={10}
-                placeholder="כתוב את הסיפור המלא שלך באופן חופשי..."
-                disabled={loading}
-              />
             </div>
           </section>
 

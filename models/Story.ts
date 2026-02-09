@@ -24,6 +24,8 @@ export interface HealthChallenge {
   primaryOtherText?: string
   sub: string
   subOtherText?: string
+  durationBeforeRecovery: string
+  impactOnQualityOfLife: string
 }
 
 /**
@@ -48,10 +50,7 @@ export interface StoryDocument extends mongoose.Document {
   title: string
   problem: string // The medical condition
   previousAttempts: string // What was tried before
-  solution: string // Type of treatment, description, duration, experience
-  results: string // Current condition
   messageToOthers: string // Message to someone going through this
-  freeTextStory?: string // Alternative: full story written freely
   
   // C. Declarations (boolean flags - all must be true to submit)
   declarationTruthful: boolean
@@ -141,6 +140,14 @@ const StorySchema = new Schema<StoryDocument>(
           type: String,
           required: false,
         },
+        durationBeforeRecovery: {
+          type: String,
+          required: true,
+        },
+        impactOnQualityOfLife: {
+          type: String,
+          required: true,
+        },
       },
       required: true,
       _id: false,
@@ -159,21 +166,9 @@ const StorySchema = new Schema<StoryDocument>(
       type: String,
       required: true,
     },
-    solution: {
-      type: String,
-      required: true,
-    },
-    results: {
-      type: String,
-      required: true,
-    },
     messageToOthers: {
       type: String,
       required: true,
-    },
-    freeTextStory: {
-      type: String,
-      required: false,
     },
     
     // C. Declarations

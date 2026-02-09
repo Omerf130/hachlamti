@@ -47,10 +47,7 @@ export default async function EditStoryPage({ params }: PageProps) {
     title: story.title,
     problem: story.problem,
     previousAttempts: story.previousAttempts,
-    solution: story.solution,
-    results: story.results,
     messageToOthers: story.messageToOthers,
-    freeTextStory: story.freeTextStory || '',
   }
 
   return (

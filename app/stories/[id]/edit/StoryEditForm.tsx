@@ -18,10 +18,7 @@ const editStoryFormSchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
-  solution: z.string().min(1, 'תיאור הפתרון הוא שדה חובה'),
-  results: z.string().min(1, 'תיאור התוצאות הוא שדה חובה'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
-  freeTextStory: z.string().optional(),
 })
 
 type EditStoryFormInput = z.infer<typeof editStoryFormSchema>
@@ -36,10 +33,7 @@ interface StoryEditFormProps {
     title: string
     problem: string
     previousAttempts: string
-    solution: string
-    results: string
     messageToOthers: string
-    freeTextStory: string
   }
 }
 
@@ -63,10 +57,7 @@ export default function StoryEditForm({ initialData }: StoryEditFormProps) {
       title: initialData.title,
       problem: initialData.problem,
       previousAttempts: initialData.previousAttempts,
-      solution: initialData.solution,
-      results: initialData.results,
       messageToOthers: initialData.messageToOthers,
-      freeTextStory: initialData.freeTextStory,
     },
   })
 
@@ -209,32 +200,11 @@ export default function StoryEditForm({ initialData }: StoryEditFormProps) {
         </div>
 
         <div className={styles.field}>
-          <label>הפתרון שעזר: סוג הטיפול, תיאור, משך וחוויה *</label>
-          <textarea {...register('solution')} rows={4} disabled={loading} />
-          {errors.solution && <span className={styles.fieldError}>{errors.solution.message}</span>}
-        </div>
-
-        <div className={styles.field}>
-          <label>תוצאות: מה מצבך היום? *</label>
-          <textarea {...register('results')} rows={4} disabled={loading} />
-          {errors.results && <span className={styles.fieldError}>{errors.results.message}</span>}
-        </div>
-
-        <div className={styles.field}>
           <label>מסר לאחרים: מה היית אומר למי שעובר את זה כרגע? *</label>
           <textarea {...register('messageToOthers')} rows={4} disabled={loading} />
           {errors.messageToOthers && (
             <span className={styles.fieldError}>{errors.messageToOthers.message}</span>
           )}
-        </div>
-
-        <div className={styles.divider}>
-          <span>או לחלופין</span>
-        </div>
-
-        <div className={styles.field}>
-          <label>כתוב את הסיפור המלא שלך בחופשיות (אופציונלי)</label>
-          <textarea {...register('freeTextStory')} rows={8} disabled={loading} />
         </div>
       </section>
 

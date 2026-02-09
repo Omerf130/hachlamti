@@ -34,6 +34,8 @@ export const HealthChallengeSchema = z.object({
   primaryOtherText: z.string().optional(),
   sub: z.string().min(1, 'יש לבחור תת קטגוריה'),
   subOtherText: z.string().optional(),
+  durationBeforeRecovery: z.string().min(1, 'יש למלא כמה זמן סבלת מהבעיה'),
+  impactOnQualityOfLife: z.string().min(1, 'יש למלא כיצד המחלה השפיעה על איכות החיים'),
 }).superRefine((data, ctx) => {
   // Validate primary is in PRIMARY_OPTIONS
   if (!PRIMARY_OPTIONS.includes(data.primary)) {
@@ -108,10 +110,7 @@ export const createStorySchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
-  solution: z.string().min(1, 'תיאור הפתרון הוא שדה חובה'),
-  results: z.string().min(1, 'תיאור התוצאות הוא שדה חובה'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
-  freeTextStory: z.string().optional(),
   
   // C. Declarations (all must be true)
   declarationTruthful: z.literal(true, {
@@ -165,10 +164,7 @@ export const updateStorySchema = z.object({
   title: z.string().min(1, 'כותרת היא שדה חובה'),
   problem: z.string().min(1, 'תיאור הבעיה הוא שדה חובה'),
   previousAttempts: z.string().min(1, 'תיאור ניסיונות קודמים הוא שדה חובה'),
-  solution: z.string().min(1, 'תיאור הפתרון הוא שדה חובה'),
-  results: z.string().min(1, 'תיאור התוצאות הוא שדה חובה'),
   messageToOthers: z.string().min(1, 'הודעה לאחרים היא שדה חובה'),
-  freeTextStory: z.string().optional(),
 })
 
 export type UpdateStoryInput = z.infer<typeof updateStorySchema>
