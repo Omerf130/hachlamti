@@ -166,11 +166,11 @@ export default function StorySubmissionForm(): JSX.Element {
     if (watchPrimary) {
       const newSubOptions = getSubOptions(watchPrimary)
       setSubOptions(newSubOptions)
-      
+
       // Reset sub when primary changes
       setValue('healthChallenge.sub', '')
       setValue('healthChallenge.subOtherText', '')
-      
+
       // If primary is "אחר", automatically set sub to "אחר"
       if (watchPrimary === 'אחר') {
         setValue('healthChallenge.sub', 'אחר')
@@ -185,11 +185,11 @@ export default function StorySubmissionForm(): JSX.Element {
     if (watchAltTreatmentPrimary) {
       const newSubOptions = getAltTreatmentSubOptions(watchAltTreatmentPrimary)
       setAltTreatmentSubOptions(newSubOptions)
-      
+
       // Reset sub when primary changes
       setValue('alternativeTreatment.sub', '')
       setValue('alternativeTreatment.subOtherText', '')
-      
+
       // If primary is "אחר", automatically set sub to "אחר"
       if (watchAltTreatmentPrimary === 'אחר') {
         setValue('alternativeTreatment.sub', 'אחר')
@@ -243,7 +243,7 @@ export default function StorySubmissionForm(): JSX.Element {
     <div className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>תודה שבחרת לשתף את סיפור ההחלמה שלך💚</h1>
+          <h1 className={styles.title}>תודה שבחרת לשתף את סיפור ההחלמה </h1>
           <p className={styles.subtitle}>
             הקמתי את האתר הזה מתוך הבנה עמוקה שברגעי חולי או משבר, הדבר שאנחנו הכי זקוקים לו הוא תקווה. לפעמים, הדרך להחלמה עוברת בשבילים פחות שגרתיים, והידע הזה – הניסיון האישי שצברתם
             – הוא אוצר שאין לו מחיר ומקור השראה לכל מי שעדיין מחפש את הדרך.
@@ -275,6 +275,7 @@ export default function StorySubmissionForm(): JSX.Element {
 
             <div className={styles.field}>
               <label htmlFor="submitterFullName">שם מלא *</label>
+              <p className={styles.hint}>לא יפורסם ללא אישורך המפורש</p>
               <input
                 id="submitterFullName"
                 type="text"
@@ -304,10 +305,10 @@ export default function StorySubmissionForm(): JSX.Element {
 
             <div className={styles.field}>
               <label className={styles.checkbox}>
-                <input 
-                  type="checkbox" 
-                  {...register('allowWhatsAppContact')} 
-                  disabled={loading} 
+                <input
+                  type="checkbox"
+                  {...register('allowWhatsAppContact')}
+                  disabled={loading}
                 />
                 <span>
                   פרטיך האישיים נשמרים במערכת המאובטחת שלנו בלבד. האם תאפשר/י שנציג מהאתר יפנה אליך במידת הצורך בווטסאפ להבהרות או במידה וגולשים ירצו לשאול אותך שאלות?
@@ -346,7 +347,7 @@ export default function StorySubmissionForm(): JSX.Element {
             </div>
 
             <div className={styles.field}>
-              <label>איך תרצה שהסיפור יפורסם? *</label>
+              <label>אני מאפשר לספר את הסיפור שלי באמצעות *</label>
               <Controller
                 name="publicationChoice"
                 control={control}
@@ -529,7 +530,7 @@ export default function StorySubmissionForm(): JSX.Element {
               )}
             </div>
           </section>
-         
+
 
           {/* B. Story Content */}
           <section className={styles.section}>
@@ -563,94 +564,80 @@ export default function StorySubmissionForm(): JSX.Element {
               )}
             </div>
             <section className={styles.section}>
-            <h2>איזה שיטת טיפול אלטרנטיבית עיקרית עזרה לך?</h2>
+              <h2>איזה שיטת טיפול אלטרנטיבית עיקרית עזרה לך?</h2>
 
-            <div className={styles.field}>
-              <label htmlFor="alternativeTreatment.primary">קטגוריית טיפול *</label>
-              <select
-                id="alternativeTreatment.primary"
-                {...register('alternativeTreatment.primary')}
-                disabled={loading}
-              >
-                <option value="">בחר קטגוריה</option>
-                {ALT_TREATMENT_PRIMARY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              {errors.alternativeTreatment?.primary && (
-                <span className={styles.fieldError}>{errors.alternativeTreatment.primary.message}</span>
-              )}
-            </div>
-
-            {/* Show primaryOtherText input if primary is "אחר" */}
-            {watchAltTreatmentPrimary === 'אחר' && (
               <div className={styles.field}>
-                <label htmlFor="alternativeTreatment.primaryOtherText">פרט את שיטת הטיפול *</label>
-                <input
-                  id="alternativeTreatment.primaryOtherText"
-                  type="text"
-                  {...register('alternativeTreatment.primaryOtherText')}
-                  placeholder="הכנס את שיטת הטיפול"
+                <label htmlFor="alternativeTreatment.primary">קטגוריית טיפול *</label>
+                <select
+                  id="alternativeTreatment.primary"
+                  {...register('alternativeTreatment.primary')}
                   disabled={loading}
-                />
-                {errors.alternativeTreatment?.primaryOtherText && (
-                  <span className={styles.fieldError}>{errors.alternativeTreatment.primaryOtherText.message}</span>
+                >
+                  <option value="">בחר קטגוריה</option>
+                  {ALT_TREATMENT_PRIMARY_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {errors.alternativeTreatment?.primary && (
+                  <span className={styles.fieldError}>{errors.alternativeTreatment.primary.message}</span>
                 )}
               </div>
-            )}
 
-            <div className={styles.field}>
-              <label htmlFor="alternativeTreatment.sub">תת קטגוריה *</label>
-              <select
-                id="alternativeTreatment.sub"
-                {...register('alternativeTreatment.sub')}
-                disabled={loading || !watchAltTreatmentPrimary}
-              >
-                <option value="">בחר תת קטגוריה</option>
-                {altTreatmentSubOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              {errors.alternativeTreatment?.sub && (
-                <span className={styles.fieldError}>{errors.alternativeTreatment.sub.message}</span>
+              {/* Show primaryOtherText input if primary is "אחר" */}
+              {watchAltTreatmentPrimary === 'אחר' && (
+                <div className={styles.field}>
+                  <label htmlFor="alternativeTreatment.primaryOtherText">פרט את שיטת הטיפול *</label>
+                  <input
+                    id="alternativeTreatment.primaryOtherText"
+                    type="text"
+                    {...register('alternativeTreatment.primaryOtherText')}
+                    placeholder="הכנס את שיטת הטיפול"
+                    disabled={loading}
+                  />
+                  {errors.alternativeTreatment?.primaryOtherText && (
+                    <span className={styles.fieldError}>{errors.alternativeTreatment.primaryOtherText.message}</span>
+                  )}
+                </div>
               )}
-            </div>
 
-            {/* Show subOtherText input if sub is "אחר" */}
-            {watchAltTreatmentSub === 'אחר' && (
               <div className={styles.field}>
-                <label htmlFor="alternativeTreatment.subOtherText">פרט את תת הקטגוריה *</label>
-                <input
-                  id="alternativeTreatment.subOtherText"
-                  type="text"
-                  {...register('alternativeTreatment.subOtherText')}
-                  placeholder="הכנס את תת הקטגוריה"
-                  disabled={loading}
-                />
-                {errors.alternativeTreatment?.subOtherText && (
-                  <span className={styles.fieldError}>{errors.alternativeTreatment.subOtherText.message}</span>
+                <label htmlFor="alternativeTreatment.sub">תת קטגוריה *</label>
+                <select
+                  id="alternativeTreatment.sub"
+                  {...register('alternativeTreatment.sub')}
+                  disabled={loading || !watchAltTreatmentPrimary}
+                >
+                  <option value="">בחר תת קטגוריה</option>
+                  {altTreatmentSubOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {errors.alternativeTreatment?.sub && (
+                  <span className={styles.fieldError}>{errors.alternativeTreatment.sub.message}</span>
                 )}
               </div>
-            )}
-          </section>
 
-            <div className={styles.field}>
-              <label htmlFor="previousAttempts">ניסיונות קודמים: מה ניסית לפני? *</label>
-              <textarea
-                id="previousAttempts"
-                {...register('previousAttempts')}
-                rows={5}
-                placeholder="תאר טיפולים או פתרונות אחרים שניסית"
-                disabled={loading}
-              />
-              {errors.previousAttempts && (
-                <span className={styles.fieldError}>{errors.previousAttempts.message}</span>
+              {/* Show subOtherText input if sub is "אחר" */}
+              {watchAltTreatmentSub === 'אחר' && (
+                <div className={styles.field}>
+                  <label htmlFor="alternativeTreatment.subOtherText">פרט את תת הקטגוריה *</label>
+                  <input
+                    id="alternativeTreatment.subOtherText"
+                    type="text"
+                    {...register('alternativeTreatment.subOtherText')}
+                    placeholder="הכנס את תת הקטגוריה"
+                    disabled={loading}
+                  />
+                  {errors.alternativeTreatment?.subOtherText && (
+                    <span className={styles.fieldError}>{errors.alternativeTreatment.subOtherText.message}</span>
+                  )}
+                </div>
               )}
-            </div>
+            </section>
 
             <div className={styles.field}>
               <label htmlFor="timeToInitialImprovement">תוך כמה זמן הרגשת בשינוי ראשוני *</label>
@@ -705,6 +692,19 @@ export default function StorySubmissionForm(): JSX.Element {
               />
               {errors.currentHealthStatus && (
                 <span className={styles.fieldError}>{errors.currentHealthStatus.message}</span>
+              )}
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="previousAttempts">ניסיונות קודמים: מה ניסית לפני? *</label>
+              <textarea
+                id="previousAttempts"
+                {...register('previousAttempts')}
+                rows={5}
+                placeholder="תאר טיפולים או פתרונות אחרים שניסית"
+                disabled={loading}
+              />
+              {errors.previousAttempts && (
+                <span className={styles.fieldError}>{errors.previousAttempts.message}</span>
               )}
             </div>
 

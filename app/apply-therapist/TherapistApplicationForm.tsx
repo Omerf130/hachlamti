@@ -410,9 +410,9 @@ export default function TherapistApplicationForm(): JSX.Element {
     <div className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>הצטרף לרשת המטפלים של הַחלמתי 💚</h1>
+          <h1 className={styles.title}>הצטרף לרשת המטפלים של הַחלמתי </h1>
           <p className={styles.subtitle}>
-            עזור לעוד אנשים להחלים. מלא את הפרטים שלך והפרופיל שלך ייבדק לפני שהאתר עולה לאוויר.
+            מטפלות ומטפלים יקרים, האתר הוקם כדי להוכיח שההחלמה היא אפשרית, אנו מאמינים שהעדות החזקה ביותר ליכולות שלכם היא תוצאות בשטח שהם סיפורי ההחלמה של המטופלים שלכם
           </p>
           <p className={styles.hint}>
             <strong>טיפ:</strong> כדאי להכין מראש תמונת פרופיל וצילום תעודות הסמכה
@@ -919,7 +919,7 @@ export default function TherapistApplicationForm(): JSX.Element {
           <section className={styles.section}>
             <h2>פרטי יצירת קשר (להצגה באתר)</h2>
             
-            <div className={styles.field}>
+            {/* <div className={styles.field}>
               <label htmlFor="displayPhone">טלפון להצגה (אופציונלי)</label>
               <input
                 id="displayPhone"
@@ -928,10 +928,10 @@ export default function TherapistApplicationForm(): JSX.Element {
                 placeholder="הכנס מספר טלפון"
                 disabled={loading}
               />
-            </div>
+            </div> */}
 
             <div className={styles.field}>
-              <label htmlFor="bookingPhone">טלפון לתיאומים (אופציונלי)</label>
+              <label htmlFor="bookingPhone">טלפון לתיאומים *</label>
               <input
                 id="bookingPhone"
                 type="tel"
@@ -940,18 +940,6 @@ export default function TherapistApplicationForm(): JSX.Element {
                 disabled={loading}
               />
             </div>
-
-            <div className={styles.field}>
-              <label htmlFor="websiteUrl">אתר / פייסבוק (אופציונלי)</label>
-              <input
-                id="websiteUrl"
-                type="url"
-                {...register('contacts.websiteUrl')}
-                placeholder="https://..."
-                disabled={loading}
-              />
-            </div>
-
             <div className={styles.field}>
               <label htmlFor="email">אימייל ליצירת קשר *</label>
               <input
@@ -964,6 +952,17 @@ export default function TherapistApplicationForm(): JSX.Element {
               {errors.contacts?.email && (
                 <span className={styles.fieldError}>{errors.contacts.email.message}</span>
               )}
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="websiteUrl">אתר / פייסבוק / אינסטגרם (אופציונלי)</label>
+              <input
+                id="websiteUrl"
+                type="url"
+                {...register('contacts.websiteUrl')}
+                placeholder="https://..."
+                disabled={loading}
+              />
             </div>
           </section>
 
