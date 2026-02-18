@@ -83,7 +83,7 @@
   margin-bottom: 1.75rem;
 
   label {
-    display: block;
+    display: flex;
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: #334155;
@@ -131,21 +131,34 @@
 
 .radioGroup {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 0.5rem;
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
 }
 
 .radio {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   background-color: #f8fafc;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  
+  @media (max-width: 480px) {
+    padding: 0.625rem 0.875rem;
+    flex: 1 1 auto;
+    min-width: max-content;
+  }
   
   &:hover {
     background-color: #f1f5f9;
@@ -157,12 +170,17 @@
     height: 1.125rem;
     cursor: pointer;
     accent-color: #c084fc;
+    flex-shrink: 0;
   }
   
   span {
     font-size: 0.9375rem;
     color: #475569;
     user-select: none;
+    
+    @media (max-width: 480px) {
+      font-size: 0.875rem;
+    }
   }
 }
 

@@ -245,8 +245,10 @@ export default function StorySubmissionForm(): JSX.Element {
         <div className={styles.header}>
           <h1 className={styles.title}>תודה שבחרת לשתף את סיפור ההחלמה </h1>
           <p className={styles.subtitle}>
-            הקמתי את האתר הזה מתוך הבנה עמוקה שברגעי חולי או משבר, הדבר שאנחנו הכי זקוקים לו הוא תקווה. לפעמים, הדרך להחלמה עוברת בשבילים פחות שגרתיים, והידע הזה – הניסיון האישי שצברתם
-            – הוא אוצר שאין לו מחיר ומקור השראה לכל מי שעדיין מחפש את הדרך.
+            הקמתי את האתר הזה מתוך הבנה עמוקה שברגעי חולי או משבר, הדבר שאנחנו הכי זקוקים לו הוא <strong>תקווה</strong>.
+            <br />
+            לפעמים, הדרך להחלמה עוברת בשבילים פחות שגרתיים, והידע הזה – הניסיון האישי שצברתם – הוא אוצר שאין לו מחיר ומקור השראה לכל מי שעדיין מחפש את הדרך.
+            <br />
             כל פרט שתשתפו יכול להיות תחילת ההחלמה של מישהו אחר.
           </p>
         </div>
@@ -388,42 +390,7 @@ export default function StorySubmissionForm(): JSX.Element {
               )}
             </div>
 
-            <div className={styles.field}>
-              <label htmlFor="therapistName">שם המטפל *</label>
-              <select
-                id="therapistName"
-                {...register('therapistName')}
-                disabled={loading}
-              >
-                <option value="">בחר מטפל</option>
-                {therapists.map((therapist) => (
-                  <option key={therapist.id} value={therapist.fullName}>
-                    {therapist.fullName}
-                  </option>
-                ))}
-                <option value="אחר">אחר</option>
-              </select>
-              {errors.therapistName && (
-                <span className={styles.fieldError}>{errors.therapistName.message}</span>
-              )}
-            </div>
 
-            {/* Show therapistNameOther input if "אחר" is selected */}
-            {watchTherapistName === 'אחר' && (
-              <div className={styles.field}>
-                <label htmlFor="therapistNameOther">שם המטפל (טקסט חופשי) *</label>
-                <input
-                  id="therapistNameOther"
-                  type="text"
-                  {...register('therapistNameOther')}
-                  placeholder="הכנס את שם המטפל"
-                  disabled={loading}
-                />
-                {errors.therapistNameOther && (
-                  <span className={styles.fieldError}>{errors.therapistNameOther.message}</span>
-                )}
-              </div>
-            )}
           </section>
 
           {/* A2. Health Challenge */}
@@ -485,6 +452,58 @@ export default function StorySubmissionForm(): JSX.Element {
               )}
             </div>
 
+            <div className={styles.field}>
+              <label htmlFor="therapistName">שם המטפל *</label>
+              <select
+                id="therapistName"
+                {...register('therapistName')}
+                disabled={loading}
+              >
+                <option value="">בחר מטפל</option>
+                {therapists.map((therapist) => (
+                  <option key={therapist.id} value={therapist.fullName}>
+                    {therapist.fullName}
+                  </option>
+                ))}
+                <option value="אחר">אחר</option>
+              </select>
+              {errors.therapistName && (
+                <span className={styles.fieldError}>{errors.therapistName.message}</span>
+              )}
+            </div>
+
+            {/* Show therapistNameOther input if "אחר" is selected */}
+            {watchTherapistName === 'אחר' && (
+              <div className={styles.field}>
+                <label htmlFor="therapistNameOther">שם המטפל (טקסט חופשי) *</label>
+                <input
+                  id="therapistNameOther"
+                  type="text"
+                  {...register('therapistNameOther')}
+                  placeholder="הכנס את שם המטפל"
+                  disabled={loading}
+                />
+                {errors.therapistNameOther && (
+                  <span className={styles.fieldError}>{errors.therapistNameOther.message}</span>
+                )}
+              </div>
+            )}
+
+            <div className={styles.field}>
+              <label htmlFor="submitterPhone">טלפון מטפל*</label>
+              {/* <p className={styles.hint}>לא יפורסם ללא אישורך המפורש</p> */}
+              <input
+                id="submitterPhone"
+                type="tel"
+                {...register('submitterPhone')}
+                placeholder="הכנס מספר טלפון"
+                disabled={loading}
+              />
+              {errors.submitterPhone && (
+                <span className={styles.fieldError}>{errors.submitterPhone.message}</span>
+              )}
+            </div>
+
             {/* Show subOtherText input if sub is "אחר" */}
             {watchSub === 'אחר' && (
               <div className={styles.field}>
@@ -502,33 +521,7 @@ export default function StorySubmissionForm(): JSX.Element {
               </div>
             )}
 
-            <div className={styles.field}>
-              <label htmlFor="healthChallenge.durationBeforeRecovery">כמה זמן סבלת מהבעיה לפני ההחלמה *</label>
-              <input
-                id="healthChallenge.durationBeforeRecovery"
-                type="text"
-                {...register('healthChallenge.durationBeforeRecovery')}
-                placeholder='לדוגמה: "שנתיים" או "כמה חודשים"'
-                disabled={loading}
-              />
-              {errors.healthChallenge?.durationBeforeRecovery && (
-                <span className={styles.fieldError}>{errors.healthChallenge.durationBeforeRecovery.message}</span>
-              )}
-            </div>
 
-            <div className={styles.field}>
-              <label htmlFor="healthChallenge.impactOnQualityOfLife">איך המחלה השפיעה על איכות החיים שלך *</label>
-              <textarea
-                id="healthChallenge.impactOnQualityOfLife"
-                {...register('healthChallenge.impactOnQualityOfLife')}
-                rows={4}
-                placeholder="תאר כיצד הבעיה השפיעה על חייך היומיומיים"
-                disabled={loading}
-              />
-              {errors.healthChallenge?.impactOnQualityOfLife && (
-                <span className={styles.fieldError}>{errors.healthChallenge.impactOnQualityOfLife.message}</span>
-              )}
-            </div>
           </section>
 
 
@@ -563,6 +556,35 @@ export default function StorySubmissionForm(): JSX.Element {
                 <span className={styles.fieldError}>{errors.problem.message}</span>
               )}
             </div>
+
+            <div className={styles.field}>
+              <label htmlFor="healthChallenge.durationBeforeRecovery">כמה זמן סבלת מהבעיה לפני ההחלמה *</label>
+              <input
+                id="healthChallenge.durationBeforeRecovery"
+                type="text"
+                {...register('healthChallenge.durationBeforeRecovery')}
+                placeholder='לדוגמה: "שנתיים" או "כמה חודשים"'
+                disabled={loading}
+              />
+              {errors.healthChallenge?.durationBeforeRecovery && (
+                <span className={styles.fieldError}>{errors.healthChallenge.durationBeforeRecovery.message}</span>
+              )}
+            </div>
+
+            <div className={styles.field}>
+              <label htmlFor="healthChallenge.impactOnQualityOfLife">איך המחלה השפיעה על איכות החיים שלך *</label>
+              <textarea
+                id="healthChallenge.impactOnQualityOfLife"
+                {...register('healthChallenge.impactOnQualityOfLife')}
+                rows={4}
+                placeholder="תאר כיצד הבעיה השפיעה על חייך היומיומיים"
+                disabled={loading}
+              />
+              {errors.healthChallenge?.impactOnQualityOfLife && (
+                <span className={styles.fieldError}>{errors.healthChallenge.impactOnQualityOfLife.message}</span>
+              )}
+            </div>
+
             <section className={styles.section}>
               <h2>איזה שיטת טיפול אלטרנטיבית עיקרית עזרה לך?</h2>
 
