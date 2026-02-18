@@ -763,37 +763,79 @@ export default function StorySubmissionForm(): JSX.Element {
           <section className={styles.section}>
             <h2>הצהרות ואישורים (חובה) *</h2>
             <div className={styles.declarationsGroup}>
+              {errors.declarationTruthful && (
+                <span className={styles.fieldError}>{errors.declarationTruthful.message}</span>
+              )}
               <label className={styles.checkbox}>
                 <input type="checkbox" {...register('declarationTruthful')} disabled={loading} />
                 <span>אני מאשר/ת שהסיפור שלי אמיתי ומדויק.</span>
               </label>
-              {errors.declarationTruthful && (
-                <span className={styles.fieldError}>{errors.declarationTruthful.message}</span>
-              )}
 
+              {errors.declarationConsent && (
+                <span className={styles.fieldError}>{errors.declarationConsent.message}</span>
+              )}
               <label className={styles.checkbox}>
                 <input type="checkbox" {...register('declarationConsent')} disabled={loading} />
                 <span>אני מסכים/ה לפרסום הסיפור שלי בפלטפורמה בהתאם לבחירת הפרטיות שלי.</span>
               </label>
-              {errors.declarationConsent && (
-                <span className={styles.fieldError}>{errors.declarationConsent.message}</span>
-              )}
 
+              {errors.declarationNotMedicalAdvice && (
+                <span className={styles.fieldError}>{errors.declarationNotMedicalAdvice.message}</span>
+              )}
               <label className={styles.checkbox}>
                 <input type="checkbox" {...register('declarationNotMedicalAdvice')} disabled={loading} />
                 <span>אני מבין/ה שהסיפור הזה הוא למטרת שיתוף חוויה בלבד ואינו מחליף ייעוץ רפואי.</span>
               </label>
-              {errors.declarationNotMedicalAdvice && (
-                <span className={styles.fieldError}>{errors.declarationNotMedicalAdvice.message}</span>
-              )}
 
+              {errors.declarationEditingConsent && (
+                <span className={styles.fieldError}>{errors.declarationEditingConsent.message}</span>
+              )}
               <label className={styles.checkbox}>
                 <input type="checkbox" {...register('declarationEditingConsent')} disabled={loading} />
                 <span>אני מבין/ה שהפלטפורמה עשויה לערוך את הסיפור למטרות שפה וכתיב בלבד.</span>
               </label>
-              {errors.declarationEditingConsent && (
-                <span className={styles.fieldError}>{errors.declarationEditingConsent.message}</span>
-              )}
+            </div>
+
+            <div style={{ 
+              marginTop: '1.5rem', 
+              padding: '1.5rem', 
+              backgroundColor: '#f0f9ff', 
+              border: '2px solid #93c5fd',
+              borderRadius: '12px',
+              textAlign: 'right'
+            }}>
+              <p style={{ 
+                fontWeight: 600, 
+                marginBottom: '1rem', 
+                color: '#1e40af',
+                fontSize: '1.1rem'
+              }}>
+                 נשמח אם תשתף את הקישור הבא עם המטפל שעזר לך
+              </p>
+              <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                חשוב שהוא יהיה חלק מקהילת המטפלים שלנו, כדי שיוכל לעזור גם למטופלים נוספים
+              </p>
+              <div style={{ 
+                padding: '0.75rem', 
+                backgroundColor: 'white', 
+                borderRadius: '8px',
+                border: '1px solid #bfdbfe',
+                marginTop: '1rem'
+              }}>
+                <a 
+                  href="https://hachlamti.vercel.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#2563eb',
+                    textDecoration: 'none',
+                    fontWeight: 500,
+                    fontSize: '1rem'
+                  }}
+                >
+                  🔗 https://hachlamti.vercel.app/
+                </a>
+              </div>
             </div>
           </section>
 
