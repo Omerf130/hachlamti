@@ -57,7 +57,6 @@ export const ProfessionSchema = z
 export const LocationSchema = z.object({
   city: z.string().min(1, 'עיר היא שדה חובה'),
   activityHours: z.string().optional(),
-  zoom: z.boolean(),
 })
 
 /**

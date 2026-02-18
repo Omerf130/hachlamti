@@ -37,7 +37,6 @@ export interface Profession {
 export interface Location {
   city: string
   activityHours?: string
-  zoom: boolean
 }
 
 /**
@@ -159,11 +158,6 @@ const TherapistSchema = new Schema<TherapistDocument>(
       activityHours: {
         type: String,
         required: false,
-      },
-      zoom: {
-        type: Boolean,
-        required: true,
-        default: false,
       },
     },
 

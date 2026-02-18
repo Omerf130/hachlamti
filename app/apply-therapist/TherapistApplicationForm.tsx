@@ -8,6 +8,7 @@ import { useState } from 'react'
 import styles from './page.module.scss'
 import { PROFESSION_OPTIONS } from '@/lib/professionOptions'
 import { PRIMARY_OPTIONS, getSubOptions } from '@/lib/healthOptions'
+import imageCompression from 'browser-image-compression'
 
 // Simplified form schema for client-side (will be validated on server)
 const therapistFormSchema = z.object({
@@ -23,7 +24,6 @@ const therapistFormSchema = z.object({
   location: z.object({
     city: z.string().min(1, 'עיר היא שדה חובה'),
     activityHours: z.string().optional(),
-    zoom: z.boolean(),
   }),
   
   educationText: z.string().optional(),
@@ -102,7 +102,7 @@ export default function TherapistApplicationForm(): JSX.Element {
     resolver: zodResolver(therapistFormSchema),
     defaultValues: {
       profession: { value: '', otherText: '' },
-      location: { city: '', activityHours: '', zoom: false },
+      location: { city: '', activityHours: '' },
       educationText: '',
       certificates: [],
       specialServices: {
@@ -131,51 +131,142 @@ export default function TherapistApplicationForm(): JSX.Element {
 
   const watchProfession = watch('profession.value')
 
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    return (bytes / (1024 * 1024)).toFixed(2)
+  }
+
+  // Helper function to compress image
+  const compressImage = async (file: File, maxSizeMB: number = 0.8, maxWidthOrHeight: number = 1920): Promise<File> => {
+    try {
+      const options = {
+        maxSizeMB,
+        maxWidthOrHeight,
+        useWebWorker: true,
+        fileType: file.type,
+      }
+      const compressedFile = await imageCompression(file, options)
+      return compressedFile
+    } catch (error) {
+      console.error('Compression error:', error)
+      throw error
+    }
+  }
+
   // Handle image upload and convert to base64
-  const handleImageUpload = (
+  const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     field: 'profileImageUrl' | 'logoImageUrl'
   ) => {
     const file = event.target.files?.[0]
     if (!file) return
 
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setValue(field, reader.result as string)
+    // Reset the input to allow re-selecting the same file after an error
+    event.target.value = ''
+
+    const maxSizeBytes = 1024 * 1024 // 1 MB
+    const fileSizeMB = formatFileSize(file.size)
+
+    try {
+      let fileToProcess = file
+
+      // Check if file exceeds 1 MB
+      if (file.size > maxSizeBytes) {
+        // Attempt automatic compression
+        setError(`מנסה לדחוס את התמונה (גודל מקורי: ${fileSizeMB} MB)...`)
+        fileToProcess = await compressImage(file, 0.8, 1920)
+        
+        // Check if compressed file is still too large
+        if (fileToProcess.size > maxSizeBytes) {
+          const compressedSizeMB = formatFileSize(fileToProcess.size)
+          setError(`הקובץ גדול מדי גם לאחר דחיסה. גודל: ${compressedSizeMB} MB. אנא בחר תמונה קטנה יותר (עד 1MB).`)
+          return
+        }
+        
+        // Success message
+        const compressedSizeMB = formatFileSize(fileToProcess.size)
+        setError(`התמונה נדחסה בהצלחה מ-${fileSizeMB} MB ל-${compressedSizeMB} MB`)
+        setTimeout(() => setError(''), 3000)
+      }
+
+      // Convert to base64
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setValue(field, reader.result as string)
+      }
+      reader.readAsDataURL(fileToProcess)
+    } catch (error) {
+      console.error('Image upload error:', error)
+      setError('שגיאה בעיבוד התמונה. אנא נסה שוב.')
     }
-    reader.readAsDataURL(file)
   }
 
   // Handle certificate uploads
-  const handleCertificateUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCertificateUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (!files) return
 
+    // Reset the input
+    event.target.value = ''
+
     const currentCerts = watch('certificates') || []
-    const remaining = 10 - currentCerts.length
+    const maxCerts = 5
+    const remaining = maxCerts - currentCerts.length
 
     if (remaining <= 0) {
-      alert('ניתן להעלות עד 10 תעודות')
+      setError('ניתן להעלות עד 5 תעודות')
       return
     }
 
+    const maxSizeBytes = 1024 * 1024 // 1 MB
     const filesToUpload = Array.from(files).slice(0, remaining)
-    const promises = filesToUpload.map((file) => {
-      return new Promise<{ url: string; fileName: string }>((resolve) => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          resolve({
-            url: reader.result as string,
-            fileName: file.name,
-          })
-        }
-        reader.readAsDataURL(file)
-      })
-    })
 
-    Promise.all(promises).then((newCerts) => {
-      setValue('certificates', [...currentCerts, ...newCerts])
-    })
+    try {
+      const processedFiles: { url: string; fileName: string }[] = []
+
+      for (const file of filesToUpload) {
+        const fileSizeMB = formatFileSize(file.size)
+        let fileToProcess = file
+
+        // Only compress images, not PDFs
+        if (file.type.startsWith('image/')) {
+          if (file.size > maxSizeBytes) {
+            setError(`מדחס ${file.name} (${fileSizeMB} MB)...`)
+            fileToProcess = await compressImage(file, 0.8, 1600)
+            
+            if (fileToProcess.size > maxSizeBytes) {
+              const compressedSizeMB = formatFileSize(fileToProcess.size)
+              setError(`${file.name} גדול מדי (${compressedSizeMB} MB לאחר דחיסה). אנא בחר קובץ קטן יותר.`)
+              continue
+            }
+          }
+        } else if (file.size > maxSizeBytes) {
+          // PDF or other file type - reject if too large
+          setError(`${file.name} גדול מדי (${fileSizeMB} MB). גודל מקסימלי: 1MB.`)
+          continue
+        }
+
+        // Convert to base64
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(fileToProcess)
+        })
+
+        processedFiles.push({
+          url: base64,
+          fileName: file.name,
+        })
+      }
+
+      if (processedFiles.length > 0) {
+        setValue('certificates', [...currentCerts, ...processedFiles])
+        setError('')
+      }
+    } catch (error) {
+      console.error('Certificate upload error:', error)
+      setError('שגיאה בעיבוד הקבצים. אנא נסה שוב.')
+    }
   }
 
   // Remove certificate
@@ -415,7 +506,11 @@ export default function TherapistApplicationForm(): JSX.Element {
             מטפלות ומטפלים יקרים, האתר הוקם כדי להוכיח שההחלמה היא אפשרית, אנו מאמינים שהעדות החזקה ביותר ליכולות שלכם היא תוצאות בשטח שהם סיפורי ההחלמה של המטופלים שלכם
           </p>
           <p className={styles.hint}>
-            <strong>טיפ:</strong> כדאי להכין מראש תמונת פרופיל וצילום תעודות הסמכה
+            <strong>טיפ:</strong> כדאי להכין מראש תמונת פרופיל וצילום תעודות הסמכה. 
+            <br />
+            <strong>חשוב:</strong> כל קובץ חייב להיות עד 1MB. תמונות גדולות יותר ידחסו אוטומטית.
+            <br />
+            מומלץ: תמונות בגודל 1920x1920 פיקסלים או פחות לאיכות מיטבית.
           </p>
         </div>
 
@@ -455,7 +550,7 @@ export default function TherapistApplicationForm(): JSX.Element {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="profileImage">תמונת פרופיל *</label>
+              <label htmlFor="profileImage">תמונת פרופיל (עד 1MB) *</label>
               <input
                 id="profileImage"
                 type="file"
@@ -463,6 +558,9 @@ export default function TherapistApplicationForm(): JSX.Element {
                 onChange={(e) => handleImageUpload(e, 'profileImageUrl')}
                 disabled={loading}
               />
+              <p className={styles.hint} style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                תמונות גדולות יידחסו אוטומטית. מומלץ: 1920x1920 פיקסלים או פחות.
+              </p>
               {watch('profileImageUrl') && (
                 <div style={{ marginTop: '0.5rem' }}>
                   <img
@@ -478,7 +576,7 @@ export default function TherapistApplicationForm(): JSX.Element {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="logoImage">תמונת לוגו (אופציונלי)</label>
+              <label htmlFor="logoImage">תמונת לוגו (עד 1MB, אופציונלי)</label>
               <input
                 id="logoImage"
                 type="file"
@@ -486,6 +584,9 @@ export default function TherapistApplicationForm(): JSX.Element {
                 onChange={(e) => handleImageUpload(e, 'logoImageUrl')}
                 disabled={loading}
               />
+              <p className={styles.hint} style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                תמונות גדולות יידחסו אוטומטית.
+              </p>
               {watch('logoImageUrl') && (
                 <div style={{ marginTop: '0.5rem' }}>
                   <img
@@ -567,20 +668,41 @@ export default function TherapistApplicationForm(): JSX.Element {
               />
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.checkbox}>
-                <input
-                  type="checkbox"
-                  {...register('location.zoom')}
-                  disabled={loading}
-                />
-                <span>זמין לטיפול אונליין (Zoom/וידאו)</span>
-              </label>
-            </div>
           </section>
 
           {/* Section 4: Education & Certificates */}
           <section className={styles.section}>
+          <h2>שירותים מיוחדים (לסינון מתקדם)</h2>
+            
+            <div className={styles.field}>
+              <label>סוגי שירות:</label>
+              <div className={styles.checkboxGroup}>
+                <label className={styles.checkbox}>
+                  <input
+                    type="checkbox"
+                    {...register('specialServices.onlineTreatment')}
+                    disabled={loading}
+                  />
+                  <span>טיפול אונליין (זום/וידאו)</span>
+                </label>
+                <label className={styles.checkbox}>
+                  <input
+                    type="checkbox"
+                    {...register('specialServices.homeVisits')}
+                    disabled={loading}
+                  />
+                  <span>ביקורי בית</span>
+                </label>
+                <label className={styles.checkbox}>
+                  <input
+                    type="checkbox"
+                    {...register('specialServices.accessibleClinic')}
+                    disabled={loading}
+                  />
+                  <span>גישה לנכים / קליניקה נגישה</span>
+                </label>
+              </div>
+            </div>
             <h2>השכלה ותעודות</h2>
             
             <div className={styles.field}>
@@ -595,17 +717,17 @@ export default function TherapistApplicationForm(): JSX.Element {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="certificates">העלאת תעודות הסמכה (עד 10 קבצים, אופציונלי)</label>
+              <label htmlFor="certificates">העלאת תעודות הסמכה (עד 5 קבצים, עד 1MB לכל קובץ, אופציונלי)</label>
               <input
                 id="certificates"
                 type="file"
                 accept="image/*,.pdf"
                 multiple
                 onChange={handleCertificateUpload}
-                disabled={loading || (watch('certificates')?.length || 0) >= 10}
+                disabled={loading || (watch('certificates')?.length || 0) >= 5}
               />
               <p className={styles.hint}>
-                הועלו {watch('certificates')?.length || 0} מתוך 10 תעודות
+                הועלו {watch('certificates')?.length || 0} מתוך 5 תעודות. כל קובץ חייב להיות עד 1MB.
               </p>
               
               {watch('certificates') && watch('certificates').length > 0 && (
@@ -646,37 +768,6 @@ export default function TherapistApplicationForm(): JSX.Element {
 
           {/* Section 5: Special Services */}
           <section className={styles.section}>
-            <h2>שירותים מיוחדים (לסינון מתקדם)</h2>
-            
-            <div className={styles.field}>
-              <label>סוגי שירות:</label>
-              <div className={styles.checkboxGroup}>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    {...register('specialServices.onlineTreatment')}
-                    disabled={loading}
-                  />
-                  <span>טיפול אונליין (זום/וידאו)</span>
-                </label>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    {...register('specialServices.homeVisits')}
-                    disabled={loading}
-                  />
-                  <span>ביקורי בית</span>
-                </label>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    {...register('specialServices.accessibleClinic')}
-                    disabled={loading}
-                  />
-                  <span>גישה לנכים / קליניקה נגישה</span>
-                </label>
-              </div>
-            </div>
 
             <div className={styles.field}>
               <label>שפות * (לפחות אחת):</label>

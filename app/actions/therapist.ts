@@ -111,7 +111,6 @@ export async function createTherapist(
           'profession.otherText': 'שם המקצוע',
           'location.city': 'עיר',
           'location.activityHours': 'שעות פעילות',
-          'location.zoom': 'זמינות אונליין',
           'educationText': 'השכלה',
           'certificates': 'תעודות',
           'specialServices.onlineTreatment': 'טיפול אונליין',

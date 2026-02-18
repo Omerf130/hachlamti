@@ -153,12 +153,6 @@ export default async function TherapistDetailPage({
                     <strong>שעות פעילות:</strong> {therapist.location.activityHours}
                   </>
                 )}
-                {therapist.location.zoom && (
-                  <>
-                    <br />
-                    <strong>✓</strong> זמין לטיפול אונליין (Zoom/וידאו)
-                  </>
-                )}
               </p>
             </section>
           )}

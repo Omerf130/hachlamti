@@ -101,10 +101,6 @@ export default async function TherapistReviewPage({ params }: PageProps) {
             </div>
           )}
 
-          <div className={styles.field}>
-            <span className={styles.label}>זמין אונליין (Zoom):</span>
-            <span className={styles.value}>{therapist.location.zoom ? 'כן ✓' : 'לא'}</span>
-          </div>
         </section>
 
         {/* Section 4: Education & Credentials */}
