@@ -164,7 +164,6 @@ export const createStorySchema = z.object({
   allowWhatsAppContact: z.boolean().default(false),
   publicationChoice: PublicationChoiceSchema,
   therapistName: z.string().min(1, 'יש לבחור מטפל'),
-  therapistNameOther: z.string().optional(),
   
   // A2. Health Challenge
   healthChallenge: HealthChallengeSchema,
@@ -228,7 +227,6 @@ export const updateStorySchema = z.object({
   allowWhatsAppContact: z.boolean().default(false),
   publicationChoice: PublicationChoiceSchema,
   therapistName: z.string().min(1, 'יש לבחור מטפל'),
-  therapistNameOther: z.string().optional(),
   
   // A2. Health Challenge
   healthChallenge: HealthChallengeSchema,

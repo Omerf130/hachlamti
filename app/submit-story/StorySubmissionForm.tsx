@@ -3,8 +3,8 @@
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { createStory, getApprovedTherapists } from '@/app/actions/story'
-import { useState, useEffect } from 'react'
+import { createStory } from '@/app/actions/story'
+import { useState, useEffect, useRef } from 'react'
 import styles from './page.module.scss'
 import { PRIMARY_OPTIONS, getSubOptions } from '@/lib/healthOptions'
 import { ALT_TREATMENT_PRIMARY_OPTIONS, getAltTreatmentSubOptions } from '@/lib/alternativeTreatmentOptions'
@@ -17,8 +17,7 @@ const storyFormSchema = z.object({
   mayContact: z.boolean(),
   allowWhatsAppContact: z.boolean(),
   publicationChoice: z.enum(['FULL_NAME', 'FIRST_NAME_ONLY', 'ANONYMOUS']),
-  therapistName: z.string().min(1, 'יש לבחור מטפל'),
-  therapistNameOther: z.string().optional(),
+  therapistName: z.string().min(1, 'יש למלא שם המטפל'),
 
   // A2. Health Challenge
   healthChallenge: z.object({
@@ -86,14 +85,6 @@ const storyFormSchema = z.object({
   declarationEditingConsent: z.literal(true, {
     errorMap: () => ({ message: 'יש לאשר אפשרות לעריכה' }),
   }),
-}).refine((data) => {
-  if (data.therapistName === 'אחר' && (!data.therapistNameOther || data.therapistNameOther.trim() === '')) {
-    return false
-  }
-  return true
-}, {
-  message: 'יש למלא את שם המטפל כאשר בוחרים אחר',
-  path: ['therapistNameOther']
 })
 
 type StoryFormInput = z.infer<typeof storyFormSchema>
@@ -104,7 +95,13 @@ export default function StorySubmissionForm(): JSX.Element {
   const [success, setSuccess] = useState<boolean>(false)
   const [subOptions, setSubOptions] = useState<string[]>(['אחר'])
   const [altTreatmentSubOptions, setAltTreatmentSubOptions] = useState<string[]>(['אחר'])
-  const [therapists, setTherapists] = useState<Array<{ id: string; fullName: string }>>([])
+  
+  // Autocomplete state
+  const [therapistSuggestions, setTherapistSuggestions] = useState<Array<{ id: string; fullName: string }>>([])
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false)
+  const [searchLoading, setSearchLoading] = useState<boolean>(false)
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const autocompleteRef = useRef<HTMLDivElement>(null)
 
 
   const {
@@ -121,7 +118,6 @@ export default function StorySubmissionForm(): JSX.Element {
       mayContact: true,
       allowWhatsAppContact: false,
       therapistName: '',
-      therapistNameOther: '',
       healthChallenge: {
         primary: '',
         primaryOtherText: '',
@@ -147,18 +143,55 @@ export default function StorySubmissionForm(): JSX.Element {
   const watchAltTreatmentPrimary = watch('alternativeTreatment.primary')
   const watchAltTreatmentSub = watch('alternativeTreatment.sub')
 
-  // Watch therapist name selection
-  const watchTherapistName = watch('therapistName')
+  // Debounced search function for therapist autocomplete
+  const handleTherapistSearch = (query: string) => {
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
 
-  // Fetch approved therapists on mount
+    // Hide suggestions if query is too short
+    if (query.length < 2) {
+      setShowSuggestions(false)
+      setTherapistSuggestions([])
+      return
+    }
+
+    // Set loading state
+    setSearchLoading(true)
+
+    // Set new timeout for debounced search (700ms)
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/therapists/search?q=${encodeURIComponent(query)}`)
+        const data = await response.json()
+
+        if (data.success) {
+          setTherapistSuggestions(data.therapists)
+          setShowSuggestions(data.therapists.length > 0)
+        }
+      } catch (error) {
+        console.error('Error searching therapists:', error)
+        setTherapistSuggestions([])
+        setShowSuggestions(false)
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 700)
+  }
+
+  // Click outside handler to close suggestions
   useEffect(() => {
-    async function loadTherapists() {
-      const result = await getApprovedTherapists()
-      if (result.success) {
-        setTherapists(result.therapists)
+    const handleClickOutside = (event: MouseEvent) => {
+      if (autocompleteRef.current && !autocompleteRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
       }
     }
-    loadTherapists()
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [])
 
   // Update sub options when primary changes (Health Challenge)
@@ -452,42 +485,63 @@ export default function StorySubmissionForm(): JSX.Element {
               )}
             </div>
 
-            <div className={styles.field}>
+            <div className={styles.field} ref={autocompleteRef}>
               <label htmlFor="therapistName">שם המטפל *</label>
-              <select
-                id="therapistName"
-                {...register('therapistName')}
-                disabled={loading}
-              >
-                <option value="">בחר מטפל</option>
-                {therapists.map((therapist) => (
-                  <option key={therapist.id} value={therapist.fullName}>
-                    {therapist.fullName}
-                  </option>
-                ))}
-                <option value="אחר">אחר</option>
-              </select>
+              <Controller
+                name="therapistName"
+                control={control}
+                render={({ field }) => (
+                  <div className={styles.autocompleteContainer}>
+                    <input
+                      id="therapistName"
+                      type="text"
+                      value={field.value}
+                      onChange={(e) => {
+                        field.onChange(e.target.value)
+                        handleTherapistSearch(e.target.value)
+                      }}
+                      onFocus={() => {
+                        if (field.value.length >= 2 && therapistSuggestions.length > 0) {
+                          setShowSuggestions(true)
+                        }
+                      }}
+                      placeholder="הקלד שם מטפל (לפחות 2 תווים לחיפוש)"
+                      disabled={loading}
+                      autoComplete="off"
+                    />
+                    {showSuggestions && (
+                      <ul className={styles.suggestionsList}>
+                        {searchLoading ? (
+                          <li className={styles.suggestionItem}>
+                            <span>מחפש...</span>
+                          </li>
+                        ) : therapistSuggestions.length > 0 ? (
+                          therapistSuggestions.map((therapist) => (
+                            <li
+                              key={therapist.id}
+                              className={styles.suggestionItem}
+                              onClick={() => {
+                                field.onChange(therapist.fullName)
+                                setShowSuggestions(false)
+                              }}
+                            >
+                              {therapist.fullName}
+                            </li>
+                          ))
+                        ) : (
+                          <li className={styles.noResults}>
+                            <span>לא נמצאו תוצאות</span>
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              />
               {errors.therapistName && (
                 <span className={styles.fieldError}>{errors.therapistName.message}</span>
               )}
             </div>
-
-            {/* Show therapistNameOther input if "אחר" is selected */}
-            {watchTherapistName === 'אחר' && (
-              <div className={styles.field}>
-                <label htmlFor="therapistNameOther">שם המטפל (טקסט חופשי) *</label>
-                <input
-                  id="therapistNameOther"
-                  type="text"
-                  {...register('therapistNameOther')}
-                  placeholder="הכנס את שם המטפל"
-                  disabled={loading}
-                />
-                {errors.therapistNameOther && (
-                  <span className={styles.fieldError}>{errors.therapistNameOther.message}</span>
-                )}
-              </div>
-            )}
 
             <div className={styles.field}>
               <label htmlFor="submitterPhone">טלפון מטפל*</label>
@@ -847,3 +901,4 @@ export default function StorySubmissionForm(): JSX.Element {
     </div>
   )
 }
+

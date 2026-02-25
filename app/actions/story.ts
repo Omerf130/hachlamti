@@ -98,7 +98,6 @@ export async function createStory(
       allowWhatsAppContact: validated.allowWhatsAppContact,
       publicationChoice: validated.publicationChoice,
       therapistName: validated.therapistName,
-      therapistNameOther: validated.therapistNameOther,
       
       healthChallenge: validated.healthChallenge,
       alternativeTreatment: validated.alternativeTreatment,
@@ -140,7 +139,6 @@ export async function createStory(
           'submitterFullName': 'שם מלא',
           'submitterPhone': 'מספר טלפון',
           'therapistName': 'שם המטפל',
-          'therapistNameOther': 'תיאור שם המטפל',
           'healthChallenge.primary': 'תחום החלמה',
           'healthChallenge.primaryOtherText': 'תיאור תחום החלמה',
           'healthChallenge.sub': 'תת קטגוריה',
@@ -245,7 +243,6 @@ export async function updateStory(
     story.allowWhatsAppContact = validated.allowWhatsAppContact
     story.publicationChoice = validated.publicationChoice
     story.therapistName = validated.therapistName
-    story.therapistNameOther = validated.therapistNameOther
     
     story.healthChallenge = validated.healthChallenge
     story.alternativeTreatment = validated.alternativeTreatment
