@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
@@ -10,7 +10,7 @@ import mongoose from 'mongoose'
  * Returns the therapist profile ID for the currently logged-in user
  * Only returns ID if therapist status is 'APPROVED'
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   try {
     // Check authentication
     const session = await getServerSession(authOptions)
