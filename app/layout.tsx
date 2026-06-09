@@ -2,6 +2,7 @@ import Script from 'next/script'
 import type { Metadata } from 'next'
 import '../styles/globals.scss'
 import Navigation from '@/components/Navigation'
+import Footer from '@/components/Footer'
 import SessionProvider from '@/components/SessionProvider'
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({
         <SessionProvider>
           <Navigation />
           {children}
+          <Footer />
         </SessionProvider>
         <Script
           src="https://cdn.userway.org/widget.js"
