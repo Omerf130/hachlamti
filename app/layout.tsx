@@ -1,3 +1,4 @@
+import Script from 'next/script'
 import type { Metadata } from 'next'
 import '../styles/globals.scss'
 import Navigation from '@/components/Navigation'
@@ -20,6 +21,11 @@ export default function RootLayout({
           <Navigation />
           {children}
         </SessionProvider>
+        <Script
+          src="https://cdn.userway.org/widget.js"
+          data-account="OqwTlPKk4s"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
