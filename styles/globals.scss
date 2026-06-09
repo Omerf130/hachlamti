@@ -47,3 +47,11 @@ a {
   text-decoration: none;
 }
 
+// UserWay accessibility widget position override
+.userway_buttons_wrapper {
+  left: 16px !important;
+  right: auto !important;
+  bottom: 16px !important;
+  top: auto !important;
+}
+

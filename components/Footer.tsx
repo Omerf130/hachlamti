@@ -68,6 +68,7 @@ export default function Footer(): JSX.Element {
             החלמתי - פלטפורמה לסיפורי החלמה וחיבור למטפלים. המקום שלכם לשתף, להתחבר ולמצוא את הדרך להחלמה.
           </p>
           <nav className={styles.footerLinks} aria-label="קישורים מהירים">
+            <Link href="/about">אודות</Link>
             <Link href="/privacy">מדיניות פרטיות</Link>
             <Link href="/terms">תנאי שימוש</Link>
             <Link href="/accessibility">הצהרת נגישות</Link>

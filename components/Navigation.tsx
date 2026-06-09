@@ -77,6 +77,9 @@ export default function Navigation(): JSX.Element {
           <Link href="/therapists" className={styles.link} onClick={closeMenu}>
             מטפלים
           </Link>
+          <Link href="/about" className={styles.link} onClick={closeMenu}>
+            אודות
+          </Link>
 
           {isAuthenticated ? (
             <>
