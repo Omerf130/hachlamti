@@ -1,7 +1,7 @@
 /* ===== Hero Section ===== */
 
 .hero {
-  background: linear-gradient(135deg, #A7B88D 0%, #8fa576 40%, #6b8a5e 100%);
+  background: url('/images/hero.avif') center/cover no-repeat;
   padding: var(--spacing-3xl) var(--spacing-xl);
   text-align: center;
   color: white;
@@ -9,11 +9,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
 }
 
 .heroContent {
   max-width: 700px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .heroTitle {

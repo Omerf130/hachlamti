@@ -1,47 +1,100 @@
-import Story, { type StoryDocument } from '@/models/Story'
+import Story from '@/models/Story'
 import { findMany } from '@/lib/mongoose-helpers'
 import styles from './page.module.scss'
-import sharedStyles from '@/styles/list-page.module.scss'
 import Link from 'next/link'
 import EmptyState from '@/components/EmptyState'
+import SearchInput from '@/components/SearchInput'
+import { Suspense } from 'react'
 
-async function getStories(): Promise<StoryDocument[]> {
-  return findMany(Story, { status: 'PUBLISHED' }, { publishedAt: -1 })
+function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength).trimEnd() + '...'
 }
 
-export default async function StoriesPage(): Promise<JSX.Element> {
-  const stories = await getStories()
+async function getStories(query?: string) {
+  const filter: Record<string, unknown> = { status: 'PUBLISHED' }
+
+  if (query) {
+    filter.$or = [
+      { title: { $regex: query, $options: 'i' } },
+      { problem: { $regex: query, $options: 'i' } },
+      { therapistName: { $regex: query, $options: 'i' } },
+      { 'healthChallenge.primary': { $regex: query, $options: 'i' } },
+    ]
+  }
+
+  return findMany(Story, filter, { publishedAt: -1 })
+}
+
+interface PageProps {
+  searchParams: Promise<{ q?: string }>
+}
+
+export default async function StoriesPage({ searchParams }: PageProps): Promise<JSX.Element> {
+  const params = await searchParams
+  const query = params.q ?? ''
+  const stories = await getStories(query || undefined)
 
   return (
-    <main className={sharedStyles.main}>
-      <h1 className={sharedStyles.title}>סיפורי החלמה</h1>
-      {stories.length === 0 ? (
-        <EmptyState message="אין סיפורים זמינים כרגע" />
-      ) : (
-        <ul className={sharedStyles.list}>
-          {stories.map((story) => (
-            <li key={story._id.toString()} className={sharedStyles.item}>
-              <Link
-                href={`/stories/${story._id.toString()}`}
-                className={sharedStyles.link}
-              >
-                <div className={styles.storyTitle}>{story.title}</div>
-                <div className={styles.storyAuthor}>{story.displayName}</div>
-                {story.publishedAt && (
-                  <div className={styles.storyDate}>
-                    {new Date(story.publishedAt).toLocaleDateString('he-IL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+    <main className={styles.page}>
+      <section className={styles.header}>
+        <h1 className={styles.title}>סיפורי החלמה והשראה</h1>
+        <p className={styles.intro}>
+          גלו סיפורי החלמה מעוררי השראה מאנשים שעברו תהליכים דומים.
+          כל סיפור הוא מקור תקווה וכוח עבור אחרים.
+        </p>
+      </section>
+
+      <section className={styles.searchSection}>
+        <Suspense fallback={
+          <div className={styles.searchBar}>
+            <input type="text" placeholder="חפש סיפורי החלמה..." className={styles.searchInput} disabled />
+          </div>
+        }>
+          <SearchInput
+            basePath="/stories"
+            placeholder="חפש סיפורי החלמה..."
+            className={styles.searchInput}
+            iconClassName={styles.searchIcon}
+            wrapperClassName={styles.searchBar}
+          />
+        </Suspense>
+      </section>
+
+      <section className={styles.gridSection}>
+        {stories.length === 0 ? (
+          <EmptyState message={query ? 'לא נמצאו סיפורים תואמים' : 'אין סיפורים זמינים כרגע'} />
+        ) : (
+          <div className={styles.grid}>
+            {stories.map((story) => (
+              <article key={story._id.toString()} className={styles.card}>
+                <div className={styles.cardBody}>
+                  <h3 className={styles.cardTitle}>{story.title}</h3>
+                  <p className={styles.cardSummary}>
+                    {truncate(story.problem || '', 120)}
+                  </p>
+                  <div className={styles.cardMeta}>
+                    {story.healthChallenge?.primary && (
+                      <span className={styles.tag}>{story.healthChallenge.primary}</span>
+                    )}
                   </div>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+                  {story.therapistName && story.therapistName !== 'ללא' && (
+                    <p className={styles.cardTherapist}>
+                      מטפל/ת: {story.therapistName}
+                    </p>
+                  )}
+                </div>
+                <Link
+                  href={`/stories/${story._id.toString()}`}
+                  className={styles.cardButton}
+                >
+                  קרא את הסיפור המלא
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   )
 }
-
