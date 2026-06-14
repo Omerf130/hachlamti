@@ -76,6 +76,13 @@ export default function LoginPage(): JSX.Element {
         </form>
         <div className={styles.signupLink}>
           <p>
+            <a href="/forgot-password" className={styles.link}>
+              שכחת סיסמה?
+            </a>
+          </p>
+        </div>
+        <div className={styles.signupLink}>
+          <p>
             אין לך חשבון?{' '}
             <a href="/signup" className={styles.link}>
               הרשם כאן

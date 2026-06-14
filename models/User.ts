@@ -12,6 +12,8 @@ export interface UserDocument extends mongoose.Document {
   email: string
   password: string
   role: UserRole
+  resetToken?: string
+  resetTokenExpiry?: Date
   createdAt: Date
   updatedAt: Date
 }
@@ -39,6 +41,14 @@ const UserSchema = new Schema<UserDocument>(
       required: true,
       default: 'BASIC',
       index: true,
+    },
+    resetToken: {
+      type: String,
+      default: undefined,
+    },
+    resetTokenExpiry: {
+      type: Date,
+      default: undefined,
     },
   },
   {
