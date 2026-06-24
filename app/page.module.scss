@@ -408,11 +408,130 @@
   }
 }
 
+/* ===== Therapists + Events Layout ===== */
+
+.therapistsEventsLayout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--spacing-2xl);
+  align-items: start;
+}
+
+.therapistsColumn {
+  min-width: 0;
+}
+
+/* ===== Events Sidebar ===== */
+
+.eventsSidebar {
+  position: sticky;
+  top: var(--spacing-xl);
+}
+
+.sidebarTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.eventSidebarCard {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+.eventSidebarImage {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.eventSidebarBody {
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eventSidebarTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+}
+
+.eventSidebarDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.eventSidebarLocation {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.eventSidebarPrice {
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.eventSidebarCta {
+  display: block;
+  text-align: center;
+  padding: var(--spacing-sm);
+  background-color: var(--color-primary);
+  color: white;
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.sidebarLink {
+  display: block;
+  text-align: center;
+  margin-top: var(--spacing-md);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 /* ===== Responsive ===== */
 
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .therapistsEventsLayout {
+    grid-template-columns: 1fr 280px;
+    gap: var(--spacing-xl);
   }
 }
 
@@ -440,6 +559,14 @@
 
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .therapistsEventsLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .eventsSidebar {
+    position: static;
   }
 
   .ctaRow {

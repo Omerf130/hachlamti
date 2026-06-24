@@ -3,7 +3,7 @@ import mongoose, { Schema, model, models } from 'mongoose'
 /**
  * Review Log Entity Type Enum
  */
-export type ReviewLogEntityType = 'STORY' | 'THERAPIST'
+export type ReviewLogEntityType = 'STORY' | 'THERAPIST' | 'EVENT'
 
 /**
  * Review Decision Enum
@@ -29,7 +29,7 @@ const ReviewLogSchema = new Schema<ReviewLogDocument>(
   {
     entityType: {
       type: String,
-      enum: ['STORY', 'THERAPIST'],
+      enum: ['STORY', 'THERAPIST', 'EVENT'],
       required: true,
     },
     entityId: {

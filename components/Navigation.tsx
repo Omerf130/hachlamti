@@ -77,6 +77,9 @@ export default function Navigation(): JSX.Element {
           <Link href="/therapists" className={styles.link} onClick={closeMenu}>
             מטפלים
           </Link>
+          <Link href="/events" className={styles.link} onClick={closeMenu}>
+            אירועים
+          </Link>
           <Link href="/about" className={styles.link} onClick={closeMenu}>
             אודות
           </Link>
@@ -90,9 +93,14 @@ export default function Navigation(): JSX.Element {
                 הסיפורים שלי
               </Link>
               {isTherapist && therapistId && (
-                <Link href={`/therapists/${therapistId}`} className={styles.link} onClick={closeMenu}>
-                  הפרופיל שלי
-                </Link>
+                <>
+                  <Link href={`/therapists/${therapistId}`} className={styles.link} onClick={closeMenu}>
+                    הפרופיל שלי
+                  </Link>
+                  <Link href="/my-events" className={styles.link} onClick={closeMenu}>
+                    האירועים שלי
+                  </Link>
+                </>
               )}
               <Link href="/apply-therapist" className={styles.link} onClick={closeMenu}>
                 הצטרף כמטפל

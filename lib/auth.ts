@@ -4,10 +4,6 @@ import { connectDB } from '@/lib/db'
 import User from '@/models/User'
 import bcrypt from 'bcryptjs'
 
-/**
- * NextAuth configuration for authentication
- * Supports both admin (env vars) and regular users (database)
- */
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -22,29 +18,8 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
-          // First, check admin credentials from environment variables
-          const adminEmail = process.env.ADMIN_EMAIL
-          const adminPassword = process.env.ADMIN_PASSWORD
-
-          if (adminEmail && adminPassword) {
-            if (
-              credentials.email === adminEmail &&
-              credentials.password === adminPassword
-            ) {
-              // Use a valid ObjectId format for admin (000000000000000000000000 is valid)
-              return {
-                id: '000000000000000000000000',
-                email: adminEmail,
-                role: 'ADMIN',
-              }
-            }
-          }
-
-          // If not admin, check database for regular users
           await connectDB()
-          
-          // Use direct Mongoose query to ensure we get the password field
-          // TypeScript workaround for Mongoose type overloads
+
           type UserFindOne = (filter: { email: string }) => Promise<InstanceType<typeof User> | null>
           const user = await (User.findOne as unknown as UserFindOne)({
             email: credentials.email.toLowerCase(),
@@ -54,7 +29,6 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
-          // Verify password
           const isValidPassword = await bcrypt.compare(
             credentials.password,
             user.password

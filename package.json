@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:admin": "npx tsx scripts/seed-admin.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -30,6 +31,7 @@
     "@types/react-dom": "^18.3.0",
     "husky": "^9.1.7",
     "sass": "^1.74.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.4.0"
   },
   "peerDependencies": {

@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Therapist from '@/models/Therapist'
+import Event from '@/models/Event'
 import { connectDB } from '@/lib/db'
 import styles from './layout.module.scss'
 
@@ -13,6 +14,17 @@ async function getPendingCount() {
     return count
   } catch (error) {
     console.error('Error fetching pending count:', error)
+    return 0
+  }
+}
+
+async function getPendingEventsCount() {
+  try {
+    await connectDB()
+    const count = await Event.countDocuments({ status: 'PENDING' })
+    return count
+  } catch (error) {
+    console.error('Error fetching pending events count:', error)
     return 0
   }
 }
@@ -30,6 +42,7 @@ export default async function AdminLayout({
   }
 
   const pendingCount = await getPendingCount()
+  const pendingEventsCount = await getPendingEventsCount()
 
   return (
     <div className={styles.adminContainer}>
@@ -57,6 +70,12 @@ export default async function AdminLayout({
         </Link>
         <Link href="/admin/stories" className={styles.navLink}>
           ניהול סיפורים
+        </Link>
+        <Link href="/admin/events" className={styles.navLink}>
+          אירועים
+          {pendingEventsCount > 0 && (
+            <span className={styles.badge}>{pendingEventsCount}</span>
+          )}
         </Link>
       </nav>
 
