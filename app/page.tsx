@@ -161,84 +161,84 @@ export default async function Home(): Promise<JSX.Element> {
         </div>
       </section>
 
-      {/* Vision Section */}
-      <section className={styles.vision}>
-        <div className={styles.visionContent}>
-          <h2 className={styles.visionTitle}>החזון שלנו</h2>
-          <p className={styles.visionText}>
-            אנו מאמינים שלכל סיפור החלמה יש כוח לעורר תקווה ולהאיר את הדרך עבור אחרים.
-            החלמתי נוצרה כדי לחבר בין אנשים שעברו תהליכי החלמה לבין אלו שמחפשים
-            השראה, תמיכה ומטפלים מקצועיים שילוו אותם בדרך.
-          </p>
-          <Link href="/about" className={styles.visionButton}>
-            קרא עוד על החזון שלנו
-          </Link>
-        </div>
-      </section>
-
-      {/* Stories Grid */}
-      <section className={styles.section}>
-        <div className={styles.sectionInner}>
-          <h2 className={styles.sectionTitle}>סיפורי החלמה</h2>
-          {stories.length > 0 ? (
-            <div className={styles.grid}>
-              {stories.map((story) => (
-                <article key={story._id.toString()} className={styles.storyCard}>
-                  <div className={styles.storyCardBody}>
-                    <h3 className={styles.storyCardTitle}>{story.title}</h3>
-                    <p className={styles.storyCardSummary}>
-                      {truncate(story.problem || '', 100)}
-                    </p>
-                    <div className={styles.storyCardMeta}>
-                      {story.healthChallenge?.primary && (
-                        <span className={styles.tag}>{story.healthChallenge.primary}</span>
-                      )}
-                      {story.alternativeTreatment?.primary && (
-                        <span className={styles.tag}>{story.alternativeTreatment.primary}</span>
-                      )}
-                    </div>
-                    {story.therapistName && story.therapistName !== 'ללא' && (
-                      <p className={styles.storyTherapist}>
-                        מטפל/ת: {story.therapistName}
-                      </p>
-                    )}
-                    <div className={styles.storyCardFooter}>
-                      <span className={styles.anonymityBadge}>
-                        {story.publicationChoice === 'ANONYMOUS'
-                          ? 'פורסם בעילום שם'
-                          : story.displayName}
-                      </span>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/stories/${story._id.toString()}`}
-                    className={styles.cardButton}
-                  >
-                    קרא את הסיפור המלא
-                  </Link>
-                </article>
-              ))}
+      <div className={styles.pageBody}>
+        {/* Main Column */}
+        <div className={styles.mainColumn}>
+          {/* Vision Section */}
+          <section className={styles.vision}>
+            <div className={styles.visionContent}>
+              <h2 className={styles.visionTitle}>החזון שלנו</h2>
+              <p className={styles.visionText}>
+                אנו מאמינים שלכל סיפור החלמה יש כוח לעורר תקווה ולהאיר את הדרך עבור אחרים.
+                החלמתי נוצרה כדי לחבר בין אנשים שעברו תהליכי החלמה לבין אלו שמחפשים
+                השראה, תמיכה ומטפלים מקצועיים שילוו אותם בדרך.
+              </p>
+              <Link href="/about" className={styles.visionButton}>
+                קרא עוד על החזון שלנו
+              </Link>
             </div>
-          ) : (
-            <p className={styles.emptyMessage}>אין סיפורים זמינים כרגע</p>
-          )}
-          <div className={styles.ctaRow}>
-            <Link href="/submit-story" className={styles.ctaPrimary}>
-              שתף את סיפור ההחלמה שלך
-            </Link>
-            <Link href="/stories" className={styles.ctaSecondary}>
-              צפה בכל סיפורי ההחלמה
-            </Link>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* Therapists + Events */}
-      <section className={`${styles.section} ${styles.sectionAlt}`}>
-        <div className={styles.sectionInner}>
-          <div className={styles.therapistsEventsLayout}>
-            {/* Therapists Grid */}
-            <div className={styles.therapistsColumn}>
+          {/* Stories Grid */}
+          <section className={styles.section}>
+            <div className={styles.sectionInner}>
+              <h2 className={styles.sectionTitle}>סיפורי החלמה</h2>
+              {stories.length > 0 ? (
+                <div className={styles.grid}>
+                  {stories.map((story) => (
+                    <article key={story._id.toString()} className={styles.storyCard}>
+                      <div className={styles.storyCardBody}>
+                        <h3 className={styles.storyCardTitle}>{story.title}</h3>
+                        <p className={styles.storyCardSummary}>
+                          {truncate(story.problem || '', 100)}
+                        </p>
+                        <div className={styles.storyCardMeta}>
+                          {story.healthChallenge?.primary && (
+                            <span className={styles.tag}>{story.healthChallenge.primary}</span>
+                          )}
+                          {story.alternativeTreatment?.primary && (
+                            <span className={styles.tag}>{story.alternativeTreatment.primary}</span>
+                          )}
+                        </div>
+                        {story.therapistName && story.therapistName !== 'ללא' && (
+                          <p className={styles.storyTherapist}>
+                            מטפל/ת: {story.therapistName}
+                          </p>
+                        )}
+                        <div className={styles.storyCardFooter}>
+                          <span className={styles.anonymityBadge}>
+                            {story.publicationChoice === 'ANONYMOUS'
+                              ? 'פורסם בעילום שם'
+                              : story.displayName}
+                          </span>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/stories/${story._id.toString()}`}
+                        className={styles.cardButton}
+                      >
+                        קרא את הסיפור המלא
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.emptyMessage}>אין סיפורים זמינים כרגע</p>
+              )}
+              <div className={styles.ctaRow}>
+                <Link href="/submit-story" className={styles.ctaPrimary}>
+                  שתף את סיפור ההחלמה שלך
+                </Link>
+                <Link href="/stories" className={styles.ctaSecondary}>
+                  צפה בכל סיפורי ההחלמה
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Therapists Section */}
+          <section className={`${styles.section} ${styles.sectionAlt}`}>
+            <div className={styles.sectionInner}>
               <h2 className={styles.sectionTitle}>המטפלים שלנו</h2>
               {therapists.length > 0 ? (
                 <div className={styles.grid}>
@@ -322,57 +322,58 @@ export default async function Home(): Promise<JSX.Element> {
                 </Link>
               </div>
             </div>
-
-            {/* Events Sidebar */}
-            <aside className={styles.eventsSidebar}>
-              <h3 className={styles.sidebarTitle}>אירועים קרובים</h3>
-              {events.length > 0 ? (
-                <div className={styles.eventsList}>
-                  {events.map((event) => (
-                    <div key={event._id.toString()} className={styles.eventSidebarCard}>
-                      {event.featuredImageUrl && (
-                        <img
-                          src={event.featuredImageUrl}
-                          alt={event.title}
-                          className={styles.eventSidebarImage}
-                        />
-                      )}
-                      <div className={styles.eventSidebarBody}>
-                        <h4 className={styles.eventSidebarTitle}>{event.title}</h4>
-                        <p className={styles.eventSidebarDate}>
-                          {new Date(event.eventDate).toLocaleDateString('he-IL', {
-                            month: 'short',
-                            day: 'numeric',
-                          })} | {event.eventTime}
-                        </p>
-                        <p className={styles.eventSidebarLocation}>
-                          {event.locationType === 'ONLINE' ? 'אונליין' : event.city}
-                        </p>
-                        {event.price && (
-                          <p className={styles.eventSidebarPrice}>{event.price}</p>
-                        )}
-                      </div>
-                      <a
-                        href={event.registrationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.eventSidebarCta}
-                      >
-                        פרטים והרשמה
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className={styles.emptyMessage}>אין אירועים קרובים</p>
-              )}
-              <Link href="/events" className={styles.sidebarLink}>
-                צפה בכל האירועים
-              </Link>
-            </aside>
-          </div>
+          </section>
         </div>
-      </section>
+
+        {/* Events Sidebar */}
+        <aside className={styles.eventsSidebar}>
+          <h3 className={styles.sidebarTitle}>אירועים קרובים</h3>
+          {events.length > 0 ? (
+            <div className={styles.eventsList}>
+              {events.map((event) => (
+                <article key={event._id.toString()} className={styles.eventCard}>
+                  {event.featuredImageUrl && (
+                    <img
+                      src={event.featuredImageUrl}
+                      alt={event.title}
+                      className={styles.eventCardImage}
+                    />
+                  )}
+                  <div className={styles.eventCardBody}>
+                    <span className={styles.eventType}>{event.eventType}</span>
+                    <h4 className={styles.eventCardTitle}>{event.title}</h4>
+                    <p className={styles.eventCardDate}>
+                      {new Date(event.eventDate).toLocaleDateString('he-IL', {
+                        month: 'short',
+                        day: 'numeric',
+                      })} | {event.eventTime}
+                    </p>
+                    <p className={styles.eventCardLocation}>
+                      {event.locationType === 'ONLINE' ? 'אונליין' : event.city}
+                    </p>
+                    {event.price && (
+                      <p className={styles.eventCardPrice}>{event.price}</p>
+                    )}
+                  </div>
+                  <a
+                    href={event.registrationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.eventCardCta}
+                  >
+                    פרטים והרשמה
+                  </a>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.emptyMessage}>אין אירועים קרובים</p>
+          )}
+          <Link href="/events" className={styles.sidebarLink}>
+            צפה בכל האירועים
+          </Link>
+        </aside>
+      </div>
     </main>
   )
 }
