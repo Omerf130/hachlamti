@@ -39,9 +39,9 @@ export default async function MyEventsPage() {
   }
 
   const statusClasses: Record<string, string> = {
-    PENDING: styles.statusPending,
-    APPROVED: styles.statusApproved,
-    REJECTED: styles.statusRejected,
+    PENDING: styles.statusPending ?? '',
+    APPROVED: styles.statusApproved ?? '',
+    REJECTED: styles.statusRejected ?? '',
   }
 
   return (
