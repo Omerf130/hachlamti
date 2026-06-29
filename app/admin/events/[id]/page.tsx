@@ -1,7 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { findById } from '@/lib/mongoose-helpers'
 import Event from '@/models/Event'
-import Link from 'next/link'
 import ApprovalButtons from './ApprovalButtons'
 import styles from './page.module.scss'
 
